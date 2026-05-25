@@ -1,0 +1,31 @@
+# Per-project state — NEVER commit
+projects/*/project.db
+projects/*/data/
+projects/*/exports/
+projects/*/logs/
+projects/*/screening/batch_*.jsonl
+projects/*/imports/
+
+# project.yaml may contain api_key — be careful.
+# If you keep keys in env vars (recommended), commit project.yaml.
+# If you put keys directly in project.yaml, uncomment the next line:
+# projects/*/project.yaml
+
+# Keep the example
+!projects/_example/
+!projects/_demo/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# GitNexus local index
+.gitnexus/

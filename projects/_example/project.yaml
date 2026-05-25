@@ -1,0 +1,90 @@
+project_id: _example
+
+# Demo project — IT / software engineering topic. Copy this shape when starting
+# a real review; replace every field with your scoping conversation output.
+
+topic: |
+  Large language models applied to automated code review and pull-request
+  feedback in software engineering.
+
+aim: |
+  Map empirical evidence on whether LLM-based review tools improve defect
+  detection, review quality, or developer workflow compared to human-only
+  or traditional static analysis.
+
+research_questions:
+  - "What empirical studies (2020 onward) evaluate LLM-based code review or automated PR comment generation on real or realistic codebases?"
+  - "Which outcomes are reported — defect detection, false positives, review time, developer acceptance, security findings?"
+
+question: |
+  Large language models applied to automated code review and pull-request
+  feedback in software engineering.
+
+date_from: "2020-01-01"
+date_to: null
+languages: ["en"]
+
+framework:
+  type: picoc
+  slots:
+    population: "Software repositories, pull requests, or developer teams using code review"
+    intervention: "LLM-based automated review, AI PR comments, or copilot-style review assistants"
+    comparison: "Human-only review, conventional static analysis, or no AI assistance"
+    outcome: "Defect detection, precision/recall, review latency, developer trust, or qualitative workflow impact"
+    context: "Empirical or benchmark evaluation, 2020 onward, English"
+
+inclusion:
+  - id: I1
+    text: "Evaluates LLM or foundation-model-based code review on code or PRs"
+  - id: I2
+    text: "Reports empirical results, user study, or reproducible benchmark (not opinion only)"
+  - id: I3
+    text: "Published 2020 onward"
+  - id: I4
+    text: "English full text or abstract sufficient to judge methods"
+
+exclusion:
+  - id: E1
+    text: "General LLM coding benchmarks with no review/PR task"
+  - id: E2
+    text: "Pure tool announcement or blog post without evaluation"
+  - id: E3
+    text: "Survey or secondary review (map separately if doing overview-of-overviews)"
+  - id: E4
+    text: "Non-English (per project scope)"
+
+hypotheses: []
+
+seeds:
+  # Leave empty in the template. During a real review the agent adds 1–3 papers here
+  # before vocabulary extraction (stage 00b).
+  papers: []
+  links:
+    - "https://arxiv.org/list/cs.SE/recent"
+
+seed_examples:
+  include:
+    - "User study of GitHub Copilot suggestions on PR review tasks with precision/recall metrics"
+    - "Benchmark comparing LLM review comments vs human reviewers on Defects4J bugs"
+  exclude:
+    - "Tutorial on prompting ChatGPT for coding without evaluation data"
+    - "General code generation paper with no review or PR context"
+
+sources:
+  openalex: true
+  crossref: true
+  pubmed: false
+  europe_pmc: false
+  arxiv: true
+  semantic_scholar: true
+  dblp: true
+  ia_scholar: false
+  core: false          # stage 05 OA resolver; set true + CORE_API_KEY in .env to enable
+  scopus: manual
+  web_of_science: manual
+
+contact_email: null
+
+llm: null
+
+extraction: null
