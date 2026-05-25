@@ -1,0 +1,17 @@
+# Concepts extracted from the research question.
+# Agent: replace placeholders with real concepts. One concept per block.
+# Each concept needs preferred term + synonyms.
+
+concepts:
+  - id: C1
+    preferred: "<concept 1>"
+    synonyms:
+      - "<synonym>"
+      - "<synonym>"
+  - id: C2
+    preferred: "<concept 2>"
+    synonyms:
+      - "<synonym>"
+
+# Boolean shape:
+# (C1 terms) AND (C2 terms) AND ... AND (filters)

@@ -1,0 +1,9 @@
+# arXiv API query. Field tags: ti: (title), abs: (abstract), au: (author),
+# cat: (category, e.g. q-fin.ST or cs.LG). Join with AND/OR/ANDNOT.
+# Example shape:
+#   (ti:"<concept A>" OR abs:"<concept A>" OR ti:<distinctive term>)
+#   AND (abs:"<concept B>" OR abs:"<related term>")
+# Useful categories for finance/quant topics: q-fin.*, stat.*, cs.LG
+# Useful for ML methods reviews: cs.LG, cs.AI, stat.ML
+
+<replace with arXiv Boolean>

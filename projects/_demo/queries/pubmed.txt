@@ -1,0 +1,6 @@
+# PubMed E-utilities query. Uses MeSH and field tags.
+# Example:
+#   ("Sleep Apnea, Obstructive"[MeSH] OR "OSA"[tiab])
+#   AND ("Continuous Positive Airway Pressure"[MeSH] OR "CPAP"[tiab])
+
+<replace with Boolean string>

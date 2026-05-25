@@ -1,0 +1,4 @@
+# Europe PMC query. Uses field tags like TITLE_ABS, KW.
+# Example: (TITLE_ABS:"sleep apnea" OR TITLE_ABS:OSA) AND (TITLE_ABS:CPAP)
+
+<replace with Boolean string>

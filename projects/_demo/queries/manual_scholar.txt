@@ -1,0 +1,11 @@
+# Google Scholar manual import.
+#
+# Google Scholar has no public API, so the engine does not scrape it.
+# Manual flow:
+#   1. Run the query in Google Scholar.
+#   2. Save relevant results to My library or export citations per paper.
+#   3. Export RIS/BibTeX if available.
+#   4. Save files under projects/<id>/imports/ as scholar_<date>.ris.
+#   5. Run: python scripts/02b_ingest_manual.py --project <id>
+
+<replace with Google Scholar query>

@@ -1,0 +1,7 @@
+# DBLP search string. CS-specific. Simple syntax; avoid rich Boolean.
+# Use top-relevance keywords because DBLP relevance-ranks.
+# Example: prediction market regime detection
+#
+# Best for: ICML, NeurIPS, ICLR, AAAI, ACL, SIGIR, CHI, etc. papers.
+
+<replace with simple keyword string>

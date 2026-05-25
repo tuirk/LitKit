@@ -1,0 +1,23 @@
+{
+  "seed_id": "seed_001",
+  "source_kind": "doi",
+  "source_value": "10.1109/ESEM64174.2025.00013",
+  "title": "Rethinking Code Review Workflows with LLM Assistance: An Empirical Study",
+  "abstract": "",
+  "authors": [
+    "Fannar Steinn Aðalsteinsson",
+    "Björn Borgar Magnússon",
+    "Mislav Milicevic",
+    "Adam Nirving Davidsson",
+    "Chih-Hong Cheng"
+  ],
+  "year": 2025,
+  "venue": "2025 ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (ESEM)",
+  "keywords": [],
+  "concepts": [],
+  "full_text_excerpt": null,
+  "raw_metadata": {
+    "doi": "10.1109/esem64174.2025.00013"
+  },
+  "error": null
+}

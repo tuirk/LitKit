@@ -1,0 +1,7 @@
+{
+  "query.bibliographic": "LLM code review empirical evaluation",
+  "filter": {
+    "type": "journal-article",
+    "has-abstract": "true"
+  }
+}

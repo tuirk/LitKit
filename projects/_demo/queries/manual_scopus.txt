@@ -1,0 +1,7 @@
+# Scopus query (paste into Scopus Document Search → Advanced).
+# Use TITLE-ABS-KEY, AND, OR, NOT.
+# Example:
+#   TITLE-ABS-KEY(("sleep apnea" OR "OSA") AND ("CPAP" OR "positive airway pressure"))
+#   AND PUBYEAR > 2020
+
+<replace with Scopus Boolean>

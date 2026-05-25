@@ -1,0 +1,5 @@
+# Internet Archive Scholar search string. Best for grey literature, older
+# scanned material, technical reports, and proceedings with uneven metadata.
+# Use a short distinctive keyword string.
+
+<replace with simple keyword string>

@@ -1,0 +1,55 @@
+﻿project_id: _demo
+topic: LLM automated code review in software engineering
+aim: Smoke-test the engine pipeline end-to-end.
+research_questions:
+  - "What empirical studies evaluate LLM-based code review tools?"
+question: LLM automated code review in software engineering
+date_from: "2020-01-01"
+date_to: null
+languages:
+- en
+inclusion:
+  - id: I1
+    text: Empirical or benchmark evaluation of LLM code review
+  - id: I2
+    text: English abstract available
+exclusion:
+  - id: E1
+    text: Opinion or blog without evaluation
+seeds:
+  papers:
+    - doi: "10.1109/ESEM64174.2025.00013"
+      note: LLM code review empirical study (ESEM 2025)
+  links: []
+seed_examples:
+  include:
+    - "User study measuring LLM review comment quality on real PRs"
+  exclude:
+    - "Blog post about prompting ChatGPT without data"
+framework:
+  type: picoc
+  slots:
+    population: Software projects and pull requests
+    intervention: LLM automated code review
+    comparison: Human review or no AI
+    outcome: Defect detection, developer acceptance
+    context: Empirical studies 2020 onward
+hypotheses: []
+sources:
+  openalex: true
+  crossref: true
+  pubmed: false
+  europe_pmc: false
+  arxiv: true
+  semantic_scholar: true
+  dblp: true
+  ia_scholar: false
+  core: false
+  scopus: manual
+  web_of_science: manual
+contact_email: null
+openalex_api_key: null
+pubmed_api_key: null
+llm: null
+extraction: null
+

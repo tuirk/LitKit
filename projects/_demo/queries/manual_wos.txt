@@ -1,0 +1,7 @@
+# Web of Science query (paste into WoS Advanced Search).
+# Use TS= for topic search, AND/OR/NOT.
+# Example:
+#   TS=(("sleep apnea" OR OSA) AND (CPAP OR "positive airway pressure"))
+#   AND PY=(2021-2025)
+
+<replace with WoS Boolean>
