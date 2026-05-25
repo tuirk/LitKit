@@ -2,6 +2,7 @@
 PyYAML>=6.0
 
 # Optional — for full-text PDF extraction in stage 07 and seed PDFs at scoping time.
+markitdown>=0.0.1
 # pypdf>=4.0
 # pdfminer.six>=20231228
 # pdfplumber>=0.11
