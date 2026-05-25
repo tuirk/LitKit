@@ -22,6 +22,11 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.local
+.env.*.local
+
+# Python / test cache
+.pytest_cache/
 
 # OS
 .DS_Store

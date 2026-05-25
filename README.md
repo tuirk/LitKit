@@ -278,3 +278,7 @@ LitKit/                         repo root
 [`skills/litkit/SKILL.md`](skills/litkit/SKILL.md). Kit changes:
 [`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md). [`AGENT.md`](AGENT.md) routes
 agents at workspace open.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
