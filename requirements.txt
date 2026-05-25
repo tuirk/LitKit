@@ -10,3 +10,6 @@ markitdown>=0.0.1
 # Optional — for vocabulary extraction in stage 00c (KeyBERT + sentence-transformers).
 # keybert>=0.8
 # sentence-transformers>=2.2
+
+# Dev / smoke tests
+pytest>=8.0
