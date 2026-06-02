@@ -1,4 +1,4 @@
-﻿from litkit.query_validator import validate_openalex, has_blocking_errors, validate_all
+from slr_engine.query_validator import validate_openalex, has_blocking_errors, validate_all
 
 
 def test_quoted_acronym_counts_as_token():

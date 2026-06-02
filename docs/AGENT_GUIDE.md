@@ -1,13 +1,13 @@
 # Agent Guide
 
-> **Running a review?** Use [`skills/litkit/SKILL.md`](../skills/litkit/SKILL.md), not this file.  
-> **This guide** is for LitKit internals — scripts, schema, stage contracts, and code changes.
+> **Running a review?** Use [`skills/SLR-Engine/SKILL.md`](../skills/SLR-Engine/SKILL.md), not this file.  
+> **This guide** is for SLR-Engine internals — scripts, schema, stage contracts, and code changes.
 
-You (the coding agent) are modifying or deeply debugging LitKit. This is your contract.
+You (the coding agent) are modifying or deeply debugging SLR-Engine. This is your contract.
 
 ## Operating principles
 
-1. **LitKit is deterministic. You are the judgment layer.**
+1. **SLR-Engine is deterministic. You are the judgment layer.**
    Scripts handle searching, dedup, resolving, downloading. You handle: turning
    a research question into Boolean queries, and screening abstracts.
 
@@ -18,11 +18,11 @@ You (the coding agent) are modifying or deeply debugging LitKit. This is your co
 3. **Every state-changing script is idempotent.** Re-running `02_search_open.py`
    will not duplicate records. Trust this; don't add guard rails on top.
 
-4. **You don't write to the DB directly.** Use `litkit.store` helpers. The schema
+4. **You don't write to the DB directly.** Use `SLR-Engine.store` helpers. The schema
    has constraints that catch bad data — let them.
 
 5. **OA-only for downloads.** Resolve and download only **gold**, **green**, or
-   **bronze** tiers (`litkit/oa_resolver.py`). **Hybrid** and **closed** are skipped.
+   **bronze** tiers (`SLR-Engine/oa_resolver.py`). **Hybrid** and **closed** are skipped.
    Sci-Hub is out of scope.
 
 ## Per-stage instructions
@@ -344,11 +344,11 @@ If `llm` is omitted or `provider: agent`, **`04c_llm_screen.py`** (not
 - a `*_prompts.jsonl` file containing exact `system` and `user` prompts
 - a `*_agent_request.md` file with the expected write-back target and commit command
 
-Prompt packets use the shared schema `litkit-agent-prompt/v1`:
+Prompt packets use the shared schema `slr-engine-agent-prompt/v1`:
 
 ```json
 {
-  "schema_version": "litkit-agent-prompt/v1",
+  "schema_version": "slr-engine-agent-prompt/v1",
   "stage": "<stage>",
   "project_id": "<project>",
   "item": {"record_id": 1, "canonical_id": "rec_000001"},

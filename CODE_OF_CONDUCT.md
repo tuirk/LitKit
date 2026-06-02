@@ -2,7 +2,7 @@
 
 ## Our pledge
 
-We pledge to make participation in LitKit a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
+We pledge to make participation in SLR-Engine a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 ## Our standards
 
@@ -21,7 +21,7 @@ Examples of unacceptable behavior:
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the maintainers via a [GitHub Security Advisory](https://github.com/tuirk/LitKit/security/advisories/new) or by contacting `@tuirk` on GitHub. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the maintainers via a [GitHub Security Advisory](https://github.com/tuirk/SLR-Engine/security/advisories/new) or by contacting `@tuirk` on GitHub. All complaints will be reviewed and investigated promptly and fairly.
 
 ## Attribution
 

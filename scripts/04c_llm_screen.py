@@ -27,9 +27,9 @@ import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect, log_event
-from litkit.llm import screen_record, LLMError, build_screen_prompt_packet
-from litkit.agent_handoff import make_packet, write_jsonl
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, log_event
+from slr_engine.llm import screen_record, LLMError, build_screen_prompt_packet
+from slr_engine.agent_handoff import make_packet, write_jsonl
 
 
 def _write_agent_screening_batch(cfg: ProjectConfig, paths: ProjectPaths,

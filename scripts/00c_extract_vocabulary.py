@@ -27,13 +27,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect, log_event
-from litkit.seeds import load_seed_records
-from litkit.vocab import (
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, log_event
+from slr_engine.seeds import load_seed_records
+from slr_engine.vocab import (
     extract_with_keybert, prompt_llm_to_curate, build_seed_text_summary,
     keybert_available, build_vocab_curation_prompt_packet,
 )
-from litkit.agent_handoff import make_packet, write_json
+from slr_engine.agent_handoff import make_packet, write_json
 
 
 def main():

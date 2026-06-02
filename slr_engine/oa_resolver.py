@@ -20,7 +20,7 @@ import urllib.parse
 import urllib.request
 from typing import Optional
 
-USER_AGENT = "litkit/1.0 (research; OA only)"
+USER_AGENT = "slr-engine/1.0 (research; OA only)"
 
 # OA tiers we will attempt to download. Closed/hybrid are skipped at resolve
 # and download time.

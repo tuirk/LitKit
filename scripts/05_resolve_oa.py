@@ -19,9 +19,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.env import load_dotenv, openalex_api_key
-from litkit.store import ProjectConfig, ProjectPaths, connect
-from litkit.oa_resolver import resolve, ALLOWED_OA_TIERS
+from slr_engine.env import load_dotenv, openalex_api_key
+from slr_engine.store import ProjectConfig, ProjectPaths, connect
+from slr_engine.oa_resolver import resolve, ALLOWED_OA_TIERS
 
 
 load_dotenv()

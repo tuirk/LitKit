@@ -1,4 +1,4 @@
-﻿from litkit.store import ProjectConfig
+from slr_engine.store import ProjectConfig
 from pathlib import Path
 
 

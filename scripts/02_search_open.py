@@ -2,10 +2,10 @@
 """Run searches against open-access APIs and store results.
 
 Reads queries from projects/<id>/queries/. For each enabled source, executes
-the query, normalizes results, and stores them via litkit.store.insert_source_hit.
+the query, normalizes results, and stores them via slr_engine.store.insert_source_hit.
 
 v0.5 additions:
-  - Pre-flight query validation (litkit.query_validator). Errors block; warnings
+  - Pre-flight query validation (slr_engine.query_validator). Errors block; warnings
     require --acknowledge-warnings or interactive override.
   - Silent-zero detection: when a source returns 0 records AND the adapter
     recorded HTTP errors, the message is surfaced as an error event, not
@@ -31,18 +31,18 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.env import (
+from slr_engine.env import (
     load_dotenv, openalex_api_key, pubmed_api_key, openalex_require_abstract,
 )
-from litkit.store import (
+from slr_engine.store import (
     ProjectConfig, ProjectPaths, connect, insert_source_hit, log_event,
     record_query
 )
-from litkit.sources import get_adapter
-from litkit.query_validator import (
+from slr_engine.sources import get_adapter
+from slr_engine.query_validator import (
     validate_all, render_summary, has_blocking_errors, has_warnings,
 )
-from litkit.sanity import check_post_search
+from slr_engine.sanity import check_post_search
 
 
 load_dotenv()

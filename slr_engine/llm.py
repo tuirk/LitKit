@@ -114,7 +114,7 @@ QUALITY_FIELDS: list[dict] = [
         "description": (
             "Tool or rubric used for this judgement. Use a named domain tool "
             "when project criteria specify one; otherwise use "
-            "'LitKit domain-based risk-of-bias rubric'."
+            "'SLR-Engine domain-based risk-of-bias rubric'."
         ),
     },
     {

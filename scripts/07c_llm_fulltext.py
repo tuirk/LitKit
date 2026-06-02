@@ -25,12 +25,12 @@ import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect, log_event
-from litkit.llm import (
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, log_event
+from slr_engine.llm import (
     screen_and_extract, get_extraction_fields, LLMError, QUALITY_FIELDS,
     build_combined_prompt_packet,
 )
-from litkit.agent_handoff import make_packet, write_jsonl
+from slr_engine.agent_handoff import make_packet, write_jsonl
 
 
 def _stage_agent_fulltext_review(*, cfg: ProjectConfig, batch_path: Path,

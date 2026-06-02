@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-LITKIT_USER_AGENT = "litkit/1.0 (research; OA only)"
+LITKIT_USER_AGENT = "slr-engine/1.0 (research; OA only)"
 
 if TYPE_CHECKING:
     from .store import ProjectConfig

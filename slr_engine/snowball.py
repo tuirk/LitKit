@@ -37,7 +37,7 @@ def snowball_seed(
     doi: Optional[str],
     direction: str,                       # "backward" or "forward"
     contact_email: Optional[str] = None,
-    user_agent: str = "litkit/1.0 (research; OA only)",
+    user_agent: str = "slr-engine/1.0 (research; OA only)",
 ) -> Iterator[NormalizedRecord]:
     """Walk one paper's references (backward) or citations (forward) via OpenAlex."""
     if direction not in {"backward", "forward"}:

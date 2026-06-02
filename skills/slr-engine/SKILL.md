@@ -1,11 +1,15 @@
 ---
-name: litkit
-description: Drive a literature review using LitKit in this repository — a step-by-step workflow (clarify intent, set inclusion/exclusion, write queries, search, dedupe, screen, download open-access full text, export with audit trail) wrapped in this skill for coding agents. Use whenever the user wants to start, resume, or run any review stage — e.g. "literature review on X", "research scan on Y", "continue my review", "screen this batch", "run the search", "scope a review", "use LitKit", or when they reference a folder under projects/. Also invoke when the user describes a research topic and asks for help finding what's been done. Do NOT invoke for kit-modification tasks like "fix the export script", "update the docs", or "patch the scripts" — those are engineering tasks, not review-running tasks.
+name: slr-engine
+description: Drive a literature review using SLR-Engine in this repository — an automated systematic literature review workflow with human-in-the-loop checkpoints. The system turns a research question into a curated, reproducible evidence set with inclusion/exclusion decisions and an audit trail. Use whenever the user wants to start, resume, or run any review stage — e.g. "literature review on X", "run an SLR", "continue my review", "screen this batch", "run the search", "scope a review", "use SLR-Engine", or when they reference a folder under projects/. Do NOT invoke for engine-modification tasks like "fix the export script", "update the docs", or "patch the scripts" — those are engineering tasks, not review-running tasks.
 ---
 
-# LitKit Operating Skill
+# SLR-Engine Operating Skill
 
-You are about to drive a literature review for the user using LitKit. This is not a documentation task. This is not an engineering task. You are running a review with them, conversationally, one stage at a time. The user is the principal; you are the operator.
+SLR-Engine is an automated systematic literature review (SLR) pipeline. It takes a research question, searches academic databases, downloads open-access papers when available, screens them in multiple passes, and outputs a curated, reproducible study set ready for synthesis.
+
+Each run should leave the user with a defensible artifact: included studies, exclusions with reasons, and an audit trail.
+
+You are about to drive a literature review for the user using SLR-Engine. This is not a documentation task. This is not an engineering task. You are running a review with them, conversationally, one stage at a time. The user is the principal; you are the operator.
 
 Seeds are ingested as records, auto-included at title/abstract screening, and
 processed first during snowballing.

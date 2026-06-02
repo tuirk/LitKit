@@ -1,8 +1,8 @@
-"""Seed paper reader.
+﻿"""Seed paper reader.
 
 Reads up to 3 concrete seed papers (DOI, OpenAlex ID, or PDF path) and
 extracts title + abstract + keywords + author-supplied terms + auto-tagged
-concepts. The output feeds vocabulary extraction (litkit/vocab.py).
+concepts. The output feeds vocabulary extraction (slr_engine/vocab.py).
 
 Soft cap at 3 seeds. If the user supplies more, the agent should drop the
 extras with friction (log to events, tell user). This module enforces
@@ -132,7 +132,7 @@ def _read_openalex_id(value: str, seed_id: str,
         url = f"{url}?mailto={urllib.parse.quote(contact_email)}"
     try:
         with urllib.request.urlopen(
-            urllib.request.Request(url, headers={"User-Agent": "litkit/1.0 (research; OA only)"}),
+            urllib.request.Request(url, headers={"User-Agent": "slr-engine/1.0 (research; OA only)"}),
             timeout=timeout,
         ) as resp:
             data = json.loads(resp.read())
@@ -155,7 +155,7 @@ def _read_doi(value: str, seed_id: str,
         oa_url = f"{oa_url}?mailto={urllib.parse.quote(contact_email)}"
     try:
         with urllib.request.urlopen(
-            urllib.request.Request(oa_url, headers={"User-Agent": "litkit/1.0 (research; OA only)"}),
+            urllib.request.Request(oa_url, headers={"User-Agent": "slr-engine/1.0 (research; OA only)"}),
             timeout=timeout,
         ) as resp:
             data = json.loads(resp.read())
@@ -167,7 +167,7 @@ def _read_doi(value: str, seed_id: str,
         pass
     # Crossref fallback (strict DOI lookup, not search; no relevance ranking)
     cr_url = f"https://api.crossref.org/works/{urllib.parse.quote(doi)}"
-    headers = {"User-Agent": "litkit/1.0 (research; OA only)"}
+    headers = {"User-Agent": "slr-engine/1.0 (research; OA only)"}
     if contact_email:
         cr_url = f"{cr_url}?mailto={urllib.parse.quote(contact_email)}"
     try:

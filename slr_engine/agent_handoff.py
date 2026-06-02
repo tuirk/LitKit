@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Iterable
 
 
-SCHEMA_VERSION = "litkit-agent-prompt/v1"
+SCHEMA_VERSION = "slr-engine-agent-prompt/v1"
 
 
 def make_packet(

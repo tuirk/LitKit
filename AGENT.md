@@ -7,7 +7,7 @@ For the **AGENT** operating this repo — read when the workspace opens.
 
 ## 1. User wants to RUN a literature review
 
-**Read and follow [`skills/litkit/SKILL.md`](skills/litkit/SKILL.md).**
+**Read and follow [`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md).**
 That skill overrides everything else in this file for scoping, conversation
 style, and stage order.
 
@@ -52,7 +52,7 @@ Read [`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md). Do not use it to run reviews.
 
 - Topic config lives in `project.yaml` — never hardcode topics in Python.
 - New pipeline stages → numbered script in `scripts/` + document it.
-- State changes go through `litkit.store` helpers, not ad-hoc SQL.
+- State changes go through `slr_engine.store` helpers, not ad-hoc SQL.
 
 ---
 
@@ -66,10 +66,10 @@ Point them to [`README.md`](README.md). They do not need this file or the skill.
 
 | Path | Purpose |
 |------|---------|
-| `litkit/` | Engine library — edit only when fixing/extending the engine |
+| `slr_engine/` | Engine library — edit only when fixing/extending the engine |
 | `scripts/` | Numbered CLI stages (`00`–`09`) you invoke |
 | `projects/<id>/` | One review: `project.yaml`, `project.db`, `queries/`, `screening/`, `exports/`, `seeds/` |
-| `skills/litkit/SKILL.md` | How to run a review (operator manual) |
+| `skills/slr-engine/SKILL.md` | How to run a review (operator manual) |
 | `projects/_example/project.yaml` | Example config shape (IT topic demo) |
 
 ---

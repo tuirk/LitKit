@@ -1,4 +1,4 @@
-"""PubMed adapter (NCBI E-utilities).
+﻿"""PubMed adapter (NCBI E-utilities).
 
 Docs: https://www.ncbi.nlm.nih.gov/books/NBK25499/
 Flow: esearch → batched efetch.
@@ -20,7 +20,7 @@ class PubMedAdapter(SourceAdapter):
 
     def __init__(self, contact_email: Optional[str] = None,
                  api_key: Optional[str] = None,
-                 user_agent: str = "litkit/1.0 (research; OA only)"):
+                 user_agent: str = "slr-engine/1.0 (research; OA only)"):
         super().__init__(contact_email=contact_email, user_agent=user_agent)
         self.api_key = api_key
 
@@ -65,7 +65,7 @@ class PubMedAdapter(SourceAdapter):
             params["api_key"] = self.api_key
         if self.contact_email:
             params["email"] = self.contact_email
-            params["tool"] = "litkit"
+            params["tool"] = "slr-engine"
 
         url = f"{self.base}/esearch.fcgi?{urllib.parse.urlencode(params)}"
         req = urllib.request.Request(url, headers={"User-Agent": self.user_agent})
@@ -91,7 +91,7 @@ class PubMedAdapter(SourceAdapter):
             params["api_key"] = self.api_key
         if self.contact_email:
             params["email"] = self.contact_email
-            params["tool"] = "litkit"
+            params["tool"] = "slr-engine"
 
         url = f"{self.base}/efetch.fcgi?{urllib.parse.urlencode(params)}"
         req = urllib.request.Request(url, headers={"User-Agent": self.user_agent})

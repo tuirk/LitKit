@@ -24,13 +24,13 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect, log_event
-from litkit.fulltext_markdown import convert_to_markdown
-from litkit.llm import (
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, log_event
+from slr_engine.fulltext_markdown import convert_to_markdown
+from slr_engine.llm import (
     extract_record, get_extraction_fields, LLMError, QUALITY_FIELDS,
     build_extract_prompt_packet,
 )
-from litkit.agent_handoff import make_packet, write_jsonl
+from slr_engine.agent_handoff import make_packet, write_jsonl
 
 
 def _stage_agent_quality_batch(*, project_dir: Path, paths: ProjectPaths,

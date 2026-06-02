@@ -1,5 +1,5 @@
 ---
-name: litkit-risk-of-bias-assessment
+name: SLR-Engine-risk-of-bias-assessment
 description: Use this skill when the user is doing full-text screening, export, or PRISMA reporting and needs study risk-of-bias assessment. The skill explains PRISMA-oriented risk-of-bias fields and how they differ from generic quality assessment.
 ---
 
@@ -42,7 +42,7 @@ python scripts/08b_quality_pass.py --project <id>
 ## Required RoB Fields
 
 `risk_of_bias_tool`: named tool or rubric used. If the project specifies a
-formal tool, use it. Otherwise use `LitKit domain-based risk-of-bias rubric`.
+formal tool, use it. Otherwise use `SLR-Engine domain-based risk-of-bias rubric`.
 
 `risk_of_bias_overall`: one of `low`, `some_concerns`, `high`, `unclear`.
 

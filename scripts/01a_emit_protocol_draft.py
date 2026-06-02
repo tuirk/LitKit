@@ -12,8 +12,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.protocol import write_protocol_draft
-from litkit.store import ProjectConfig, ProjectPaths, connect, log_event
+from slr_engine.protocol import write_protocol_draft
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, log_event
 
 
 def main():

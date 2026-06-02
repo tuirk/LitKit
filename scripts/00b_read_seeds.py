@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Read concrete seed papers and persist their metadata.
 
 The agent calls this after collecting up to 3 concrete seeds from the user
@@ -9,7 +9,7 @@ The agent calls this after collecting up to 3 concrete seeds from the user
   3. Persists each as projects/<id>/seeds/<seed_id>.json.
   4. Reports what was read, what was dropped (cap), what errored.
 
-Output is consumed by litkit/vocab.py for KeyBERT + LLM vocabulary extraction.
+Output is consumed by slr_engine/vocab.py for KeyBERT + LLM vocabulary extraction.
 
 The seeds for this script come from project.yaml's `seeds` section — the
 agent should write them there before invoking this script. Supported shape:
@@ -32,8 +32,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect, insert_source_hit, log_event
-from litkit.seeds import (
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, insert_source_hit, log_event
+from slr_engine.seeds import (
     read_seeds_batch, write_seed_records, classify_seed, SEED_CAP,
 )
 

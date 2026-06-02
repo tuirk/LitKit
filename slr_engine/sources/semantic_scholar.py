@@ -26,7 +26,7 @@ class SemanticScholarAdapter(SourceAdapter):
     base = "https://api.semanticscholar.org/graph/v1/paper"
 
     def __init__(self, contact_email: Optional[str] = None,
-                 user_agent: str = "litkit/1.0 (research; OA only)"):
+                 user_agent: str = "slr-engine/1.0 (research; OA only)"):
         super().__init__(contact_email=contact_email, user_agent=user_agent)
         self.api_key = os.environ.get("S2_API_KEY")
 

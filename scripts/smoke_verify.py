@@ -1,5 +1,5 @@
 ﻿#!/usr/bin/env python3
-"""Quick LitKit pipeline smoke check using projects/_demo/."""
+"""Quick SLR-Engine pipeline smoke check using projects/_demo/."""
 from __future__ import annotations
 
 import argparse
@@ -30,10 +30,29 @@ def main() -> int:
 
     db = project_dir / "project.db"
     if not db.exists():
-        run([py, "scripts/00_init_project.py", "--project", args.project])
+        run(
+            [
+                py,
+                "scripts/00_init_project.py",
+                "--id",
+                args.project,
+                "--topic",
+                "Demo smoke verification project",
+            ]
+        )
 
-    run([py, "scripts/02_search_open.py", "--project", args.project, "--max-records", str(args.max_records)])
-    run([py, "scripts/03_dedup.py", "--project", args.project])
+    run(
+        [
+            py,
+            "scripts/02_search_open.py",
+            "--project",
+            args.project,
+            "--max-records",
+            str(args.max_records),
+            "--acknowledge-warnings",
+        ]
+    )
+    run([py, "scripts/03_dedup.py", "--project", args.project, "--acknowledge-warnings"])
     run([py, "scripts/05_resolve_oa.py", "--project", args.project])
     run([py, "scripts/09_export.py", "--project", args.project])
     print("Smoke verify OK")

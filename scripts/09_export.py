@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect
+from slr_engine.store import ProjectConfig, ProjectPaths, connect
 
 
 def main():
@@ -276,11 +276,11 @@ def main():
         json.dump(audit, f, indent=2, default=str)
 
     # --- methodology_report.md ---
-    from litkit.protocol import write_methodology_report
+    from slr_engine.protocol import write_methodology_report
     report_path = write_methodology_report(cfg, paths)
 
     # --- PRISMA flow diagrams ---
-    from litkit.prisma import write_diagrams
+    from slr_engine.prisma import write_diagrams
     canonical_path, expanded_path = write_diagrams(cfg, paths)
 
     print(f"Wrote: {csv_path}")

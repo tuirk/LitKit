@@ -21,8 +21,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectPaths, connect
-from litkit.dedup import fuzzy_dedup
+from slr_engine.store import ProjectPaths, connect
+from slr_engine.dedup import fuzzy_dedup
 
 
 def _last_search_blocking(conn) -> list[dict]:

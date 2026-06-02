@@ -1,5 +1,5 @@
 ---
-name: litkit-screening
+name: SLR-Engine-screening
 description: Use this skill when screening titles and abstracts for a systematic literature review. Triggers when the user has run scripts/04_screen_prep.py and you see batch_NNN.jsonl files in projects/<id>/screening/.
 ---
 

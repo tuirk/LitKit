@@ -63,7 +63,7 @@ class ProjectConfig:
     #  "model": "claude-sonnet-4-5", "temperature": 0.0}
     llm: Optional[dict] = None
     # Optional extraction schema config. None → use the generic preset.
-    # See litkit.llm.get_extraction_fields for the shape.
+    # See slr_engine.llm.get_extraction_fields for the shape.
     extraction: Optional[dict] = None
 
     @classmethod
@@ -178,16 +178,22 @@ def init_project(projects_root: Path, project_id: str,
     If both given, topic wins.
     """
     project_dir = projects_root / project_id
-    if project_dir.exists():
-        raise FileExistsError(f"Project already exists: {project_dir}")
     paths = ProjectPaths(project_dir)
+    if project_dir.exists():
+        # Support bootstrapping tracked demo/template folders that exist
+        # in git but do not yet have a local project.db.
+        if paths.db.exists():
+            raise FileExistsError(f"Project already exists: {project_dir}")
     paths.ensure()
     cfg = ProjectConfig(
         project_id=project_id,
         topic=topic or question or "",
     )
-    cfg.save(project_dir)
-    init_db(paths.db)
+    cfg_path = project_dir / "project.yaml"
+    if not cfg_path.exists():
+        cfg.save(project_dir)
+    if not paths.db.exists():
+        init_db(paths.db)
     return project_dir
 
 

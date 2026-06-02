@@ -14,8 +14,8 @@ import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths, connect, insert_source_hit, log_event, record_query
-from litkit.importers import import_file
+from slr_engine.store import ProjectConfig, ProjectPaths, connect, insert_source_hit, log_event, record_query
+from slr_engine.importers import import_file
 
 
 def _detect_source(filename: str) -> str | None:

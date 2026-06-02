@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and apply external-harness outputs for litkit-agent-prompt/v1.
+"""Validate and apply external-harness outputs for slr-engine-agent-prompt/v1.
 
 Typical flow:
   1. Engine writes *_prompts.jsonl or *_prompt.json
@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.agent_handoff import SCHEMA_VERSION, load_packets
+from slr_engine.agent_handoff import SCHEMA_VERSION, load_packets
 
 
 VALID_DECISIONS = {"include", "exclude", "unsure"}

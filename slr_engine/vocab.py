@@ -421,12 +421,12 @@ def _parse_curation_response(text: str) -> dict:
 
 
 # ---------------------------------------------------------------------
-# LLM dispatch (mirrors litkit/llm.py providers)
+# LLM dispatch (mirrors slr_engine/llm.py providers)
 # ---------------------------------------------------------------------
 
 def _llm_call(provider: str, model: str, system: str, user: str,
               temperature: float, max_tokens: int, timeout: int) -> str:
-    """Minimal LLM dispatch. Mirrors the providers in litkit/llm.py."""
+    """Minimal LLM dispatch. Mirrors the providers in slr_engine/llm.py."""
     if provider == "anthropic":
         return _call_anthropic(model, system, user, temperature, max_tokens, timeout)
     if provider == "deepseek":

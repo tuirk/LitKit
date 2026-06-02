@@ -1,4 +1,4 @@
-"""SQLite schema for an SLR project."""
+﻿"""SQLite schema for an SLR project."""
 
 SCHEMA_SQL = """
 -- Canonical record table. One row per unique work after dedup.
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS extractions (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     record_id         INTEGER NOT NULL,
     fields_json       TEXT,                  -- JSON object: {field_name: value}
-                                              -- See litkit/llm.py GENERIC_EXTRACTION_FIELDS
+                                              -- See slr_engine/llm.py GENERIC_EXTRACTION_FIELDS
                                               -- for the default schema.
     -- Quality assessment fields (populated only if --with-quality was set).
     -- Domain-neutral, designed for AI/ML/tech/finance/maths.

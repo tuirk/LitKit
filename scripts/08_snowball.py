@@ -30,12 +30,12 @@ import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import (
+from slr_engine.store import (
     ProjectConfig, ProjectPaths, connect, insert_source_hit, log_event,
     record_query
 )
-from litkit.snowball import snowball_seed
-from litkit.sources.semantic_scholar import SemanticScholarAdapter
+from slr_engine.snowball import snowball_seed
+from slr_engine.sources.semantic_scholar import SemanticScholarAdapter
 
 
 def _snowball_state(conn) -> tuple[int, int | None]:

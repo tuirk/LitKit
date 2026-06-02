@@ -17,11 +17,11 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectPaths, connect, log_event
-from litkit.oa_resolver import ALLOWED_OA_TIERS
+from slr_engine.store import ProjectPaths, connect, log_event
+from slr_engine.oa_resolver import ALLOWED_OA_TIERS
 
 
-USER_AGENT = "litkit/1.0 (research; OA only)"
+USER_AGENT = "slr-engine/1.0 (research; OA only)"
 
 
 def _safe_filename(canonical_id: str, fmt: str) -> str:

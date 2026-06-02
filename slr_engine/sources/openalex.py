@@ -62,7 +62,7 @@ class OpenAlexAdapter(SourceAdapter):
         contact_email: Optional[str] = None,
         api_key: Optional[str] = None,
         require_abstract: bool = True,
-        user_agent: str = "litkit/1.0 (research; OA only)",
+        user_agent: str = "slr-engine/1.0 (research; OA only)",
     ):
         super().__init__(contact_email=contact_email, user_agent=user_agent)
         self.api_key = api_key

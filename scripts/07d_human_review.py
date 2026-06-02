@@ -32,7 +32,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import connect, log_event
+from slr_engine.store import connect, log_event
 
 
 VALID_DECISIONS = {"include", "exclude", "unsure"}

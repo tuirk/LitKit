@@ -42,7 +42,7 @@ class SourceAdapter(ABC):
     name: str = "base"
 
     def __init__(self, contact_email: Optional[str] = None,
-                 user_agent: str = "litkit/1.0 (research; OA only)"):
+                 user_agent: str = "slr-engine/1.0 (research; OA only)"):
         self.contact_email = contact_email
         self.user_agent = user_agent
         # Tracks whether any HTTP request in this adapter's lifetime errored.

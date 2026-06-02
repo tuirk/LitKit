@@ -1,4 +1,4 @@
-﻿from litkit.oa_resolver import ALLOWED_OA_TIERS
+from slr_engine.oa_resolver import ALLOWED_OA_TIERS
 
 
 def test_allowed_oa_tiers():

@@ -23,7 +23,7 @@ agent), but the chain itself is fixed:
 4. **Seeds (1–3 concrete papers)** — DOI / OpenAlex ID / PDF. Hard
    prerequisite for good vocabulary; the skill treats seeds as required before
    PICOC/query work. Without seeds, slot terms come from general association
-   and queries drift (`litkit/seeds.py` also documents: no built-in discovery search).
+   and queries drift (`SLR-Engine/seeds.py` also documents: no built-in discovery search).
 5. **Vocabulary extraction** — KeyBERT on seed text, then LLM curation;
    produces the canonical vocabulary the rest of the review uses
 6. **Framework** — structures each RQ into slots (PICOC by default),
@@ -149,7 +149,7 @@ of. Paste its title or DOI as your seed. Done.
 I'll pick seeds from those."* The agent runs `02_search_open.py` with a loose
 query (you approve literals first), you pick 1–3 papers, then **`00b` → `00c`**
 before real query generation. This is an extra round — not a separate engine mode.
-`litkit/seeds.py` explicitly says: no discovery search API; this is manual recovery.
+`SLR-Engine/seeds.py` explicitly says: no discovery search API; this is manual recovery.
 
 ### "I have one seed."
 
@@ -348,7 +348,7 @@ literature or older scanned material matters.
 
 ## A note on Crossref as a search source
 
-LitKit enables Crossref by default, but Crossref's REST API does
+SLR-Engine enables Crossref by default, but Crossref's REST API does
 *relevance ranking* on free-text queries, not strict Boolean filtering.
 This matters for systematic reviews because:
 
@@ -360,7 +360,7 @@ This matters for systematic reviews because:
   surface tangentially-related papers and rank them high enough to fill
   the result set with noise.
 
-LitKit's `litkit/sources/crossref.py` accepts structured params:
+SLR-Engine's `SLR-Engine/sources/crossref.py` accepts structured params:
 
 ```json
 {
@@ -392,7 +392,7 @@ arXiv for physics/CS preprints) are usually a better fit.
 
 ## Google Scholar manual import
 
-Google Scholar has no public API, and LitKit does not scrape it. If Scholar
+Google Scholar has no public API, and SLR-Engine does not scrape it. If Scholar
 coverage matters, run the query in Scholar manually, export citations as RIS
 where possible, save the file as `projects/<id>/imports/scholar_<date>.ris`,
 then run:

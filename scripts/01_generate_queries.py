@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""Generate query scaffolding for an LitKit project.
+﻿#!/usr/bin/env python3
+"""Generate query scaffolding for an SLR-Engine project.
 
 This script produces TEMPLATE files in projects/<id>/queries/. The coding
 agent is then expected to:
@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.store import ProjectConfig, ProjectPaths
+from slr_engine.store import ProjectConfig, ProjectPaths
 
 
 CONCEPTS_TEMPLATE = """# Concepts extracted from the research question.

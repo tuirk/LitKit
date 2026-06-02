@@ -1,6 +1,6 @@
-ï»¿# LitKit demo project
+# SLR-Engine demo project
 
-Minimal end-to-end example for verifying a LitKit install. Uses IT/LLM code-review queries with a small date window.
+Minimal end-to-end example for verifying a SLR-Engine install. Uses IT/LLM code-review queries with a small date window.
 
 ## Quick verify
 
@@ -22,8 +22,8 @@ python scripts/09_export.py --project _demo
 
 ## What is committed
 
-- `project.yaml` â€” scoping config
-- `queries/` â€” filled Boolean templates
-- `seeds/seed_001.json` â€” one seed paper
+- `project.yaml` — scoping config
+- `queries/` — filled Boolean templates
+- `seeds/seed_001.json` — one seed paper
 
 Runtime artifacts (`project.db`, `exports/`, `logs/`, screening batches) stay gitignored.

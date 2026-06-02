@@ -30,8 +30,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from litkit.fulltext_markdown import convert_to_markdown
-from litkit.store import ProjectConfig, ProjectPaths, connect
+from slr_engine.fulltext_markdown import convert_to_markdown
+from slr_engine.store import ProjectConfig, ProjectPaths, connect
 
 
 def main():
