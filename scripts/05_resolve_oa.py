@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""Resolve open-access full-text URLs for included records.
+"""Resolve open-access full-text URL candidates for included records.
 
-Walks the resolver chain (PMC → Europe PMC → OpenAlex → Unpaywall → CORE →
-Crossref) and stores the result in the downloads table with status='resolved'.
-CORE is used only when `sources.core: true` in project.yaml and `CORE_API_KEY`
-is set. The actual fetch happens in 06_download.py.
+Collects ranked OA candidates (PMC → Europe PMC → OpenAlex → Unpaywall →
+arXiv → CORE → Crossref) and stores the best as status='resolved' with
+remaining candidates as status='queued'. CORE is used only when
+`sources.core: true` in project.yaml and `CORE_API_KEY` is set.
+
+The actual fetch (walking resolved then queued) happens in 06_download.py.
 
 By default, only resolves records with screening decision='include'. Use
---all-screened to also include 'unsure'.
+--all-screened to also include 'unsure'. Use --retry-failed to clear prior
+failed/skipped download rows and re-resolve those records.
 
 Usage:
   python scripts/05_resolve_oa.py --project <id>
   python scripts/05_resolve_oa.py --project <id> --decided-by agent
+  python scripts/05_resolve_oa.py --project <id> --retry-failed
 """
 import argparse
 import os
@@ -21,10 +25,41 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from slr_engine.env import load_dotenv, openalex_api_key
 from slr_engine.store import ProjectConfig, ProjectPaths, connect
-from slr_engine.oa_resolver import resolve, ALLOWED_OA_TIERS
+from slr_engine.oa_resolver import resolve_candidates, ALLOWED_OA_TIERS
 
 
 load_dotenv()
+
+
+def _clear_failed_downloads(conn, record_ids: list[int] | None = None) -> int:
+    """Delete download rows for records that never succeeded (for re-resolve)."""
+    if record_ids is not None and not record_ids:
+        return 0
+    if record_ids is None:
+        cur = conn.execute(
+            """
+            DELETE FROM downloads
+            WHERE record_id IN (
+              SELECT d.record_id FROM downloads d
+              WHERE d.record_id NOT IN (
+                SELECT record_id FROM downloads WHERE status = 'success'
+              )
+            )
+            """
+        )
+    else:
+        placeholders = ",".join("?" * len(record_ids))
+        cur = conn.execute(
+            f"""
+            DELETE FROM downloads
+            WHERE record_id IN ({placeholders})
+              AND record_id NOT IN (
+                SELECT record_id FROM downloads WHERE status = 'success'
+              )
+            """,
+            record_ids,
+        )
+    return cur.rowcount
 
 
 def main():
@@ -35,6 +70,11 @@ def main():
     ap.add_argument("--decided-by", default=None,
                     help="Filter screening rows by decided_by (e.g. agent, human, llm)")
     ap.add_argument("--core-api-key", default=None)
+    ap.add_argument(
+        "--retry-failed",
+        action="store_true",
+        help="Clear failed/skipped download rows (no success) and re-resolve",
+    )
     ap.add_argument(
         "--projects-root",
         default=str(Path(__file__).resolve().parents[1] / "projects"),
@@ -55,15 +95,23 @@ def main():
         params.append(args.decided_by)
 
     with connect(paths.db) as conn:
+        if args.retry_failed:
+            n = _clear_failed_downloads(conn)
+            print(f"Cleared {n} download row(s) for retry.")
+
         rows = conn.execute(
-            f"SELECT r.id, r.canonical_id, r.doi, r.pmid, r.pmcid, r.openalex_id "
+            f"SELECT r.id, r.canonical_id, r.doi, r.pmid, r.pmcid, r.openalex_id, "
+            f"       r.url, "
+            f"       (SELECT sh.source_id FROM source_hits sh "
+            f"         WHERE sh.record_id = r.id AND sh.source = 'arxiv' "
+            f"         LIMIT 1) AS arxiv_source_id "
             f"FROM records r "
             f"JOIN screening s ON s.record_id = r.id "
             f"WHERE s.pass = 'title_abstract' AND s.decision IN ({placeholders})"
             f"{screening_filter} "
             f"AND r.id NOT IN ("
             f"  SELECT record_id FROM downloads "
-            f"  WHERE status IN ('resolved', 'success')"
+            f"  WHERE status IN ('resolved', 'success', 'queued')"
             f") "
             f"ORDER BY r.id",
             params
@@ -71,23 +119,32 @@ def main():
 
     print(f"Resolving OA for {len(rows)} records...")
     resolved = 0
+    queued_total = 0
     skipped = 0
-    tier_blocked = 0
     oa_key = openalex_api_key(cfg)
     core_key = None
     if cfg.sources.get("core") is True:
         core_key = args.core_api_key or os.environ.get("CORE_API_KEY")
 
     for r in rows:
-        result = resolve(
+        candidates = resolve_candidates(
             doi=r["doi"], pmid=r["pmid"], pmcid=r["pmcid"],
             openalex_id=r["openalex_id"],
             contact_email=cfg.contact_email,
             core_api_key=core_key,
             openalex_api_key=oa_key,
+            record_url=r["url"],
+            source="arxiv" if r["arxiv_source_id"] else None,
+            source_id=r["arxiv_source_id"],
         )
+        # Keep only allowed OA tiers
+        candidates = [
+            c for c in candidates
+            if (c.get("oa_status") or "unknown") in ALLOWED_OA_TIERS
+        ]
+
         with connect(paths.db) as conn:
-            if result is None:
+            if not candidates:
                 conn.execute(
                     "INSERT INTO downloads "
                     "(record_id, resolver_source, url, status) "
@@ -99,40 +156,36 @@ def main():
                     (r["id"],)
                 )
                 skipped += 1
-            else:
-                oa_status = result.get("oa_status", "unknown")
-                if oa_status not in ALLOWED_OA_TIERS:
-                    conn.execute(
-                        "INSERT INTO downloads "
-                        "(record_id, resolver_source, url, status) "
-                        "VALUES (?, ?, ?, 'skipped_closed')",
-                        (r["id"], result["resolver_source"], result["url"])
-                    )
-                    conn.execute(
-                        "UPDATE records SET oa_status = ?, oa_url = ? WHERE id = ?",
-                        (oa_status, result["url"], r["id"])
-                    )
-                    tier_blocked += 1
-                    continue
+                continue
 
+            first = candidates[0]
+            oa_status = first.get("oa_status", "unknown")
+            conn.execute(
+                "INSERT INTO downloads "
+                "(record_id, resolver_source, url, license, file_format, status) "
+                "VALUES (?,?,?,?,?,'resolved')",
+                (r["id"], first["resolver_source"], first["url"],
+                 first.get("license"), first.get("file_format"))
+            )
+            for alt in candidates[1:]:
                 conn.execute(
                     "INSERT INTO downloads "
                     "(record_id, resolver_source, url, license, file_format, status) "
-                    "VALUES (?,?,?,?,?,'resolved')",
-                    (r["id"], result["resolver_source"], result["url"],
-                     result.get("license"), result.get("file_format"))
+                    "VALUES (?,?,?,?,?,'queued')",
+                    (r["id"], alt["resolver_source"], alt["url"],
+                     alt.get("license"), alt.get("file_format"))
                 )
-                conn.execute(
-                    "UPDATE records SET oa_status = ?, oa_url = ?, license = ? "
-                    "WHERE id = ?",
-                    (oa_status, result["url"], result.get("license"), r["id"])
-                )
-                resolved += 1
+                queued_total += 1
+            conn.execute(
+                "UPDATE records SET oa_status = ?, oa_url = ?, license = ? "
+                "WHERE id = ?",
+                (oa_status, first["url"], first.get("license"), r["id"])
+            )
+            resolved += 1
 
     print(f"Resolved: {resolved}")
+    print(f"Queued alternates: {queued_total}")
     print(f"Skipped (no OA found): {skipped}")
-    if tier_blocked:
-        print(f"Skipped (OA tier not allowed): {tier_blocked}")
     print()
     print("Next: python scripts/06_download.py --project", args.project)
 

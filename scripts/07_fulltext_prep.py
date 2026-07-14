@@ -18,7 +18,7 @@ Only records with:
   - title_abstract decision = 'include'
   - downloads.status = 'success'
 are included. Records that were title-included but couldn't be downloaded
-get listed in a separate `not_downloaded.txt` for ILL/manual handling.
+get listed in `not_downloaded.csv` + `not_downloaded.txt` for ILL/manual handling.
 
 Usage:
   python scripts/07_fulltext_prep.py --project <id>
@@ -31,6 +31,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from slr_engine.fulltext_markdown import convert_to_markdown
+from slr_engine.not_downloaded import (
+    fetch_not_downloaded,
+    rows_to_dicts,
+    write_not_downloaded_report,
+)
 from slr_engine.store import ProjectConfig, ProjectPaths, connect
 
 
@@ -76,18 +81,7 @@ def main():
             (args.batch_size,)
         ).fetchall()
 
-        # Records included but not downloaded — for the not_downloaded report
-        not_dl = conn.execute(
-            """
-            SELECT r.canonical_id, r.title, r.year, r.doi, r.url
-            FROM records r
-            JOIN screening s_ta ON s_ta.record_id = r.id
-                 AND s_ta.pass='title_abstract' AND s_ta.decision='include'
-            LEFT JOIN downloads d ON d.record_id = r.id AND d.status='success'
-            WHERE d.id IS NULL
-            ORDER BY r.id
-            """
-        ).fetchall()
+        not_dl = fetch_not_downloaded(conn)
 
     if not rows and not not_dl:
         print("Nothing ready for full-text screening yet.")
@@ -95,20 +89,14 @@ def main():
         print("04c_llm_screen), then 05_resolve_oa, then 06_download.")
         return
 
-    # Write the not-downloaded report
+    # Write the structured not-downloaded report (CSV + TXT)
     if not_dl:
-        nd_path = paths.screening / "not_downloaded.txt"
-        with open(nd_path, "w", encoding="utf-8") as f:
-            f.write("# Records included at title/abstract but no OA full text.\n")
-            f.write("# Use ILL or your library to obtain these.\n\n")
-            for r in not_dl:
-                f.write(f"- {r['canonical_id']} ({r['year']}) {r['title']}\n")
-                if r['doi']:
-                    f.write(f"  DOI: {r['doi']}\n")
-                if r['url']:
-                    f.write(f"  URL: {r['url']}\n")
-                f.write("\n")
-        print(f"{len(not_dl)} included records have no OA full text — see {nd_path}")
+        nd_dicts = rows_to_dicts(not_dl)
+        csv_path, txt_path = write_not_downloaded_report(paths.screening, nd_dicts)
+        print(
+            f"{len(nd_dicts)} included records have no OA full text — "
+            f"see {csv_path.name} / {txt_path.name}"
+        )
 
     if not rows:
         print("All downloaded full-text records already screened.")

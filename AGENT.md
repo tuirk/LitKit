@@ -76,7 +76,9 @@ Point them to [`README.md`](README.md). They do not need this file or the skill.
 
 ## Hard rules (always)
 
-- **OA-only downloads** — no Sci-Hub; paywalled → `not_downloaded.txt`.
+- **OA-only downloads** — no Sci-Hub; paywalled → `not_downloaded.csv` / `.txt`.
+  Resolve collects multiple OA candidates (PMC, Europe PMC, OpenAlex, Unpaywall,
+  arXiv, CORE, Crossref); download walks them until one succeeds.
 - **Don't bypass `04_screen_prep.py`** — batch JSONL is the audit trail.
 - **`decided_by` provenance:** `agent` (hand labels), `llm:<provider>` (`04c`),
   `human` (overrides), `seed` (auto-include on first commit).

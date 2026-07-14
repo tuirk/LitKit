@@ -1,21 +1,24 @@
 """Open-access full-text resolver.
 
-For each record, walk a chain of resolvers and return the best OA URL plus
-license info. Refuses anything that isn't lawfully obtainable.
+For each record, collect ranked OA URL candidates from lawful sources.
+Refuses anything that isn't lawfully obtainable.
 
-Resolver order:
+Candidate sources (order / ranking priority):
   1. PMC (via PMCID)
-  2. Europe PMC full-text
-  3. OpenAlex best_oa_location
-  4. Unpaywall (requires email)
-  5. CORE (requires API key)
-  6. Crossref text-mining links
+  2. Europe PMC (XML + PDF when OA)
+  3. OpenAlex OA locations (best + all oa_locations)
+  4. Unpaywall OA locations (published → accepted/AAM → submitted)
+  5. arXiv PDF (from arXiv id or record URL)
+  6. CORE (requires API key)
+  7. Crossref text-mining links
 
-Returns {resolver_source, url, license, file_format, oa_status} or None.
+`resolve()` returns the best candidate or None.
+`resolve_candidates()` returns the full ranked, deduped list.
 """
 from __future__ import annotations
 
 import json
+import re
 import urllib.parse
 import urllib.request
 from typing import Optional
@@ -26,64 +29,209 @@ USER_AGENT = "slr-engine/1.0 (research; OA only)"
 # and download time.
 ALLOWED_OA_TIERS = frozenset({"gold", "green", "bronze"})
 
+_ARXIV_ID_RE = re.compile(
+    r"(?:arxiv[.:]?\s*)?(?:abs/|pdf/)?(\d{4}\.\d{4,5})(?:v\d+)?",
+    re.IGNORECASE,
+)
+_ARXIV_OLD_RE = re.compile(
+    r"(?:arxiv[.:]?\s*)?(?:abs/|pdf/)?([a-z-]+(?:\.[A-Z]{2})?/\d{7})(?:v\d+)?",
+    re.IGNORECASE,
+)
+
+_VERSION_RANK = {
+    "publishedversion": 0,
+    "acceptedversion": 1,
+    "submittedversion": 2,
+}
+
+_SOURCE_RANK = {
+    "pmc": 0,
+    "europepmc": 1,
+    "openalex": 2,
+    "unpaywall": 3,
+    "arxiv": 4,
+    "core": 5,
+    "crossref": 6,
+}
+
+_FORMAT_RANK = {"pdf": 0, "xml": 1, "html": 2}
+
 
 def resolve(
     *,
-    doi: Optional[str],
-    pmid: Optional[str],
-    pmcid: Optional[str],
-    openalex_id: Optional[str],
+    doi: Optional[str] = None,
+    pmid: Optional[str] = None,
+    pmcid: Optional[str] = None,
+    openalex_id: Optional[str] = None,
     contact_email: Optional[str] = None,
     core_api_key: Optional[str] = None,
     openalex_api_key: Optional[str] = None,
+    record_url: Optional[str] = None,
+    source: Optional[str] = None,
+    source_id: Optional[str] = None,
 ) -> Optional[dict]:
-    """Try resolvers in order. Return first hit or None."""
+    """Return the best OA candidate, or None."""
+    cands = resolve_candidates(
+        doi=doi,
+        pmid=pmid,
+        pmcid=pmcid,
+        openalex_id=openalex_id,
+        contact_email=contact_email,
+        core_api_key=core_api_key,
+        openalex_api_key=openalex_api_key,
+        record_url=record_url,
+        source=source,
+        source_id=source_id,
+    )
+    return cands[0] if cands else None
+
+
+def resolve_candidates(
+    *,
+    doi: Optional[str] = None,
+    pmid: Optional[str] = None,
+    pmcid: Optional[str] = None,
+    openalex_id: Optional[str] = None,
+    contact_email: Optional[str] = None,
+    core_api_key: Optional[str] = None,
+    openalex_api_key: Optional[str] = None,
+    record_url: Optional[str] = None,
+    source: Optional[str] = None,
+    source_id: Optional[str] = None,
+) -> list[dict]:
+    """Collect ranked, URL-deduped OA download candidates."""
+    raw: list[dict] = []
+
     # 1. PMC
     if pmcid:
-        return {
+        pmc = pmcid if str(pmcid).upper().startswith("PMC") else f"PMC{pmcid}"
+        raw.append({
             "resolver_source": "pmc",
-            "url": f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmcid}/pdf/",
+            "url": f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc}/pdf/",
             "license": "pmc-oa",
             "file_format": "pdf",
             "oa_status": "gold",
-        }
+            "version_rank": 0,
+        })
 
     # 2. Europe PMC
     if pmid or pmcid or doi:
-        epmc = _try_europe_pmc(pmid=pmid, pmcid=pmcid, doi=doi)
-        if epmc:
-            return epmc
+        raw.extend(_collect_europe_pmc(pmid=pmid, pmcid=pmcid, doi=doi))
 
     # 3. OpenAlex
     if openalex_id or doi:
-        oa = _try_openalex(
+        raw.extend(_collect_openalex(
             openalex_id=openalex_id,
             doi=doi,
             contact_email=contact_email,
             api_key=openalex_api_key,
-        )
-        if oa:
-            return oa
+        ))
 
-    # 4. Unpaywall (requires email)
+    # 4. Unpaywall
     if doi and contact_email:
-        up = _try_unpaywall(doi=doi, email=contact_email)
-        if up:
-            return up
+        raw.extend(_collect_unpaywall(doi=doi, email=contact_email))
 
-    # 5. CORE
+    # 5. arXiv
+    raw.extend(_collect_arxiv(
+        source=source, source_id=source_id, record_url=record_url, doi=doi,
+    ))
+
+    # 6. CORE
     if (doi or pmid) and core_api_key:
         core = _try_core(doi=doi, pmid=pmid, api_key=core_api_key)
         if core:
-            return core
+            core["version_rank"] = 0
+            raw.append(core)
 
-    # 6. Crossref text-mining links (limited but lawful)
+    # 7. Crossref text-mining
     if doi:
-        cr = _try_crossref_links(doi=doi)
-        if cr:
-            return cr
+        raw.extend(_collect_crossref_links(doi=doi))
 
+    return _rank_and_dedupe(raw)
+
+
+def extract_arxiv_id(
+    *,
+    source: Optional[str] = None,
+    source_id: Optional[str] = None,
+    record_url: Optional[str] = None,
+    doi: Optional[str] = None,
+) -> Optional[str]:
+    """Best-effort arXiv id from source fields / URL / DOI."""
+    if source and str(source).lower() == "arxiv" and source_id:
+        cleaned = _normalize_arxiv_id(str(source_id))
+        if cleaned:
+            return cleaned
+
+    for blob in (source_id, record_url, doi):
+        if not blob:
+            continue
+        cleaned = _normalize_arxiv_id(str(blob))
+        if cleaned:
+            return cleaned
     return None
+
+
+def arxiv_pdf_url(arxiv_id: str) -> str:
+    return f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+
+
+def _normalize_arxiv_id(text: str) -> Optional[str]:
+    text = text.strip()
+    if "doi.org/10.48550/arxiv." in text.lower():
+        text = text.lower().split("arxiv.", 1)[-1]
+    m = _ARXIV_ID_RE.search(text)
+    if m:
+        return m.group(1)
+    m = _ARXIV_OLD_RE.search(text)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _normalize_url(url: str) -> str:
+    u = (url or "").strip()
+    # Strip fragments and trailing slashes for dedupe
+    u = u.split("#", 1)[0].rstrip("/")
+    return u.lower()
+
+
+def _file_format_from_url(url: str, default: str = "html") -> str:
+    low = url.lower().split("?", 1)[0]
+    if low.endswith(".pdf") or "/pdf" in low or low.endswith("/pdf/"):
+        return "pdf"
+    if low.endswith(".xml") or "fulltextxml" in low:
+        return "xml"
+    return default
+
+
+def _rank_and_dedupe(candidates: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    out: list[dict] = []
+    for c in candidates:
+        url = (c.get("url") or "").strip()
+        if not url:
+            continue
+        key = _normalize_url(url)
+        if key in seen:
+            continue
+        seen.add(key)
+        item = dict(c)
+        item["url"] = url
+        if not item.get("file_format"):
+            item["file_format"] = _file_format_from_url(url)
+        item.setdefault("version_rank", 9)
+        out.append(item)
+
+    out.sort(key=lambda c: (
+        _SOURCE_RANK.get(c.get("resolver_source", ""), 99),
+        int(c.get("version_rank", 9)),
+        _FORMAT_RANK.get(c.get("file_format", "html"), 9),
+    ))
+    # Drop ranking helper from public dicts (keep optional fields clean)
+    for c in out:
+        c.pop("version_rank", None)
+    return out
 
 
 def _get_json(
@@ -102,8 +250,8 @@ def _get_json(
         return None
 
 
-def _try_europe_pmc(*, pmid: Optional[str], pmcid: Optional[str],
-                    doi: Optional[str]) -> Optional[dict]:
+def _collect_europe_pmc(*, pmid: Optional[str], pmcid: Optional[str],
+                        doi: Optional[str]) -> list[dict]:
     if pmcid:
         q = f"PMCID:{pmcid}"
     elif pmid:
@@ -111,47 +259,68 @@ def _try_europe_pmc(*, pmid: Optional[str], pmcid: Optional[str],
     elif doi:
         q = f'DOI:"{doi}"'
     else:
-        return None
+        return []
 
     url = ("https://www.ebi.ac.uk/europepmc/webservices/rest/search?"
-           + urllib.parse.urlencode({"query": q, "format": "json", "resultType": "core"}))
+           + urllib.parse.urlencode({
+               "query": q, "format": "json", "resultType": "core",
+           }))
     data = _get_json(url)
     if not data:
-        return None
+        return []
     results = data.get("resultList", {}).get("result", [])
     if not results:
-        return None
+        return []
     r = results[0]
     if r.get("isOpenAccess") != "Y":
-        return None
+        return []
 
+    out: list[dict] = []
+    license_ = r.get("license") or "epmc-oa"
     epmc_id = r.get("id")
     src = r.get("source", "MED")
-    if r.get("fullTextIdList"):
-        return {
+    r_pmcid = r.get("pmcid") or pmcid
+
+    if r.get("fullTextIdList") and epmc_id:
+        out.append({
             "resolver_source": "europepmc",
-            "url": f"https://www.ebi.ac.uk/europepmc/webservices/rest/{src}/{epmc_id}/fullTextXML",
-            "license": r.get("license") or "epmc-oa",
+            "url": (
+                f"https://www.ebi.ac.uk/europepmc/webservices/rest/"
+                f"{src}/{epmc_id}/fullTextXML"
+            ),
+            "license": license_,
             "file_format": "xml",
             "oa_status": "gold",
-        }
-    return None
+            "version_rank": 0,
+        })
+
+    if r_pmcid:
+        pmc = r_pmcid if str(r_pmcid).upper().startswith("PMC") else f"PMC{r_pmcid}"
+        out.append({
+            "resolver_source": "europepmc",
+            "url": f"https://europepmc.org/articles/{pmc}?pdf=render",
+            "license": license_,
+            "file_format": "pdf",
+            "oa_status": "gold",
+            "version_rank": 0,
+        })
+    return out
 
 
-def _try_openalex(
+def _collect_openalex(
     *,
     openalex_id: Optional[str],
     doi: Optional[str],
     contact_email: Optional[str],
     api_key: Optional[str] = None,
-) -> Optional[dict]:
+) -> list[dict]:
     if openalex_id:
         wid = openalex_id.rsplit("/", 1)[-1]
         url = f"https://api.openalex.org/works/{wid}"
     elif doi:
         url = f"https://api.openalex.org/works/doi:{doi}"
     else:
-        return None
+        return []
     if contact_email:
         url += ("&" if "?" in url else "?") + f"mailto={contact_email}"
 
@@ -160,46 +329,99 @@ def _try_openalex(
         headers["Authorization"] = f"Bearer {api_key}"
     data = _get_json(url, headers=headers or None)
     if not data:
-        return None
+        return []
 
     oa_status = (data.get("open_access") or {}).get("oa_status") or "unknown"
     if oa_status not in ALLOWED_OA_TIERS:
-        return None
+        return []
 
-    best = data.get("best_oa_location") or {}
-    pdf = best.get("pdf_url") or best.get("url")
-    if not pdf or not best.get("is_oa"):
-        return None
-    return {
-        "resolver_source": "openalex",
-        "url": pdf,
-        "license": best.get("license"),
-        "file_format": "pdf" if pdf.lower().endswith(".pdf") else "html",
-        "oa_status": oa_status,
-    }
+    locations = []
+    best = data.get("best_oa_location")
+    if best:
+        locations.append(best)
+    for loc in data.get("oa_locations") or []:
+        locations.append(loc)
+
+    out: list[dict] = []
+    for loc in locations:
+        if not loc or not loc.get("is_oa"):
+            continue
+        pdf = loc.get("pdf_url") or loc.get("url")
+        if not pdf:
+            continue
+        out.append({
+            "resolver_source": "openalex",
+            "url": pdf,
+            "license": loc.get("license"),
+            "file_format": _file_format_from_url(pdf),
+            "oa_status": oa_status,
+            "version_rank": _VERSION_RANK.get(
+                str(loc.get("version") or "").lower().replace("_", ""), 9
+            ),
+        })
+    return out
 
 
-def _try_unpaywall(*, doi: str, email: str) -> Optional[dict]:
-    url = f"https://api.unpaywall.org/v2/{urllib.parse.quote(doi)}?email={urllib.parse.quote(email)}"
+def _collect_unpaywall(*, doi: str, email: str) -> list[dict]:
+    url = (
+        f"https://api.unpaywall.org/v2/{urllib.parse.quote(doi)}"
+        f"?email={urllib.parse.quote(email)}"
+    )
     data = _get_json(url)
     if not data:
-        return None
+        return []
 
     oa_status = data.get("oa_status") or "unknown"
     if oa_status not in ALLOWED_OA_TIERS:
-        return None
+        return []
 
-    best = data.get("best_oa_location") or {}
-    pdf = best.get("url_for_pdf") or best.get("url")
-    if not pdf:
-        return None
-    return {
-        "resolver_source": "unpaywall",
-        "url": pdf,
-        "license": best.get("license"),
-        "file_format": "pdf" if pdf.lower().endswith(".pdf") else "html",
-        "oa_status": oa_status,
-    }
+    locations = []
+    best = data.get("best_oa_location")
+    if best:
+        locations.append(best)
+    for loc in data.get("oa_locations") or []:
+        locations.append(loc)
+
+    out: list[dict] = []
+    for loc in locations:
+        if not loc:
+            continue
+        pdf = loc.get("url_for_pdf") or loc.get("url")
+        if not pdf:
+            continue
+        out.append({
+            "resolver_source": "unpaywall",
+            "url": pdf,
+            "license": loc.get("license"),
+            "file_format": _file_format_from_url(pdf),
+            "oa_status": oa_status,
+            "version_rank": _VERSION_RANK.get(
+                str(loc.get("version") or "").lower().replace("_", ""), 9
+            ),
+        })
+    return out
+
+
+def _collect_arxiv(
+    *,
+    source: Optional[str],
+    source_id: Optional[str],
+    record_url: Optional[str],
+    doi: Optional[str],
+) -> list[dict]:
+    arxiv_id = extract_arxiv_id(
+        source=source, source_id=source_id, record_url=record_url, doi=doi,
+    )
+    if not arxiv_id:
+        return []
+    return [{
+        "resolver_source": "arxiv",
+        "url": arxiv_pdf_url(arxiv_id),
+        "license": "arxiv",
+        "file_format": "pdf",
+        "oa_status": "green",
+        "version_rank": 1,
+    }]
 
 
 def _try_core(*, doi: Optional[str], pmid: Optional[str],
@@ -235,21 +457,32 @@ def _try_core(*, doi: Optional[str], pmid: Optional[str],
     }
 
 
-def _try_crossref_links(*, doi: str) -> Optional[dict]:
+def _collect_crossref_links(*, doi: str) -> list[dict]:
     url = f"https://api.crossref.org/works/{urllib.parse.quote(doi)}"
     data = _get_json(url)
     if not data:
-        return None
+        return []
     msg = data.get("message", {})
+    out: list[dict] = []
     for link in msg.get("link", []) or []:
-        if link.get("intended-application") == "text-mining":
-            ct = link.get("content-type", "")
-            fmt = "pdf" if "pdf" in ct else "xml" if "xml" in ct else "html"
-            return {
-                "resolver_source": "crossref",
-                "url": link.get("URL"),
-                "license": None,
-                "file_format": fmt,
-                "oa_status": "gold",
-            }
-    return None
+        if link.get("intended-application") != "text-mining":
+            continue
+        link_url = link.get("URL")
+        if not link_url:
+            continue
+        ct = link.get("content-type", "")
+        if "pdf" in ct:
+            fmt = "pdf"
+        elif "xml" in ct:
+            fmt = "xml"
+        else:
+            fmt = _file_format_from_url(link_url)
+        out.append({
+            "resolver_source": "crossref",
+            "url": link_url,
+            "license": None,
+            "file_format": fmt,
+            "oa_status": "gold",
+            "version_rank": 0,
+        })
+    return out

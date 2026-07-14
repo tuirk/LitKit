@@ -110,9 +110,13 @@ def render_canonical(cfg: ProjectConfig, flow: dict) -> str:
     ta_unsure = ta.get("unsure", 0)
 
     dl = flow.get("downloads") or {}
-    dl_success = dl.get("success", 0)
-    dl_failed = dl.get("failed", 0) + dl.get("skipped_closed", 0) + \
-                dl.get("skipped_no_license", 0)
+    dl_rec = flow.get("download_records") or {}
+    dl_success = dl_rec.get("success", dl.get("success", 0))
+    dl_failed = dl_rec.get(
+        "not_retrieved",
+        dl.get("failed", 0) + dl.get("skipped_closed", 0)
+        + dl.get("skipped_no_license", 0),
+    )
 
     ft = flow.get("ft_decisions") or {}
     ft_excluded = ft.get("exclude", 0)
@@ -241,8 +245,12 @@ def render_expanded(cfg: ProjectConfig, flow: dict) -> str:
     ta_included = ta.get("include", 0)
 
     dl = flow.get("downloads") or {}
-    dl_success = dl.get("success", 0)
-    dl_failed = dl.get("failed", 0) + dl.get("skipped_closed", 0)
+    dl_rec = flow.get("download_records") or {}
+    dl_success = dl_rec.get("success", dl.get("success", 0))
+    dl_failed = dl_rec.get(
+        "not_retrieved",
+        dl.get("failed", 0) + dl.get("skipped_closed", 0),
+    )
 
     ft = flow.get("ft_decisions") or {}
     ft_excluded = ft.get("exclude", 0)

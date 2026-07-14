@@ -96,12 +96,12 @@ CREATE TABLE IF NOT EXISTS dedup_log (
 CREATE TABLE IF NOT EXISTS downloads (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     record_id       INTEGER NOT NULL,
-    resolver_source TEXT NOT NULL,          -- pmc, europepmc, openalex, unpaywall, core, publisher
+    resolver_source TEXT NOT NULL,          -- pmc, europepmc, openalex, unpaywall, arxiv, core, crossref
     url             TEXT NOT NULL,
     license         TEXT,
     file_path       TEXT,                   -- relative path under data/fulltext/
     file_format     TEXT,                   -- pdf, xml, html
-    status          TEXT NOT NULL,          -- success, failed, skipped_closed, skipped_no_license
+    status          TEXT NOT NULL,          -- resolved, queued, success, failed, skipped_closed, skipped_superseded
     error           TEXT,
     fetched_at      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE

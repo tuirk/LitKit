@@ -117,7 +117,7 @@ API calls where noted.
 | 04c | T/A screen LLM (optional) | Unattended LLM or agent handoff packets (`*_prompts.jsonl`) | script / agent |
 | 05 | resolve OA | PMC → Europe PMC → OpenAlex → Unpaywall → CORE (optional) → Crossref; gold/green/bronze only | script |
 | 06 | download | Fetch OA full text to `data/fulltext/` | script |
-| 07 | full-text prep | PDF/HTML/XML → `data/fulltext_md/`; intro/conclusion excerpts for triage; `not_downloaded.txt` for paywalled includes | script |
+| 07 | full-text prep | PDF/HTML/XML → `data/fulltext_md/`; intro/conclusion excerpts for triage; `not_downloaded.csv`/`.txt` for paywalled includes | script |
 | 07b | full-text commit | Commit hand labels on full-text batches | agent |
 | 07c | LLM full-text + extract (optional) | Screen + structured extraction on paper text; `--with-quality` adds PRISMA-oriented risk-of-bias fields | script + agent |
 | 07d | human review | Review LLM recommendations; user overrides; final commit | user (final), agent (assistant) |
@@ -166,7 +166,8 @@ optional — add them for rate limits or extra resolvers. `CORE_API_KEY` is used
 when `sources.core: true` in `project.yaml`. `OPENALEX_API_KEY` can also live in
 `project.yaml` as `openalex_api_key`.
 Set `contact_email` in `project.yaml`. Paywalled or hybrid tiers are not
-auto-downloaded; see `screening/not_downloaded.txt`.
+auto-downloaded; see `screening/not_downloaded.csv` / `not_downloaded.txt`.
+Resolve collects multiple OA candidates and download retries them in order.
 
 **Default: agent drives judgment.** With no `llm:` block (or `provider: agent`), your
 coding agent handles vocabulary curation, screening, and full-text review via the

@@ -564,6 +564,24 @@ def _flow_counts(conn: sqlite3.Connection) -> dict:
     ).fetchall():
         out["downloads"][r["status"]] = r["n"]
 
+    # Record-level retrieval (avoids inflating PRISMA with failed alt URLs)
+    out["download_records"] = {
+        "success": conn.execute(
+            "SELECT COUNT(DISTINCT record_id) AS n FROM downloads "
+            "WHERE status = 'success'"
+        ).fetchone()["n"],
+        "not_retrieved": conn.execute(
+            """
+            SELECT COUNT(DISTINCT d.record_id) AS n
+            FROM downloads d
+            WHERE d.record_id NOT IN (
+                SELECT record_id FROM downloads WHERE status = 'success'
+            )
+              AND d.status IN ('failed', 'skipped_closed', 'skipped_no_license')
+            """
+        ).fetchone()["n"],
+    }
+
     out["extractions_total"] = conn.execute(
         "SELECT COUNT(*) AS n FROM extractions"
     ).fetchone()["n"]
@@ -611,9 +629,15 @@ def _format_flow_summary(flow: dict) -> str:
         for decision, count in flow["ta_decisions"].items():
             lines.append(f"- {decision}: {count}")
         lines.append("")
-    if flow["downloads"]:
+    if flow["downloads"] or flow.get("download_records"):
         lines.append("**Full-text retrieval:**")
-        for status, count in flow["downloads"].items():
+        dr = flow.get("download_records") or {}
+        if dr:
+            lines.append(f"- records retrieved: {dr.get('success', 0)}")
+            lines.append(f"- records not retrieved: {dr.get('not_retrieved', 0)}")
+        for status, count in (flow.get("downloads") or {}).items():
+            if status in ("queued", "skipped_superseded"):
+                continue
             lines.append(f"- {status}: {count}")
         lines.append("")
     if flow["ft_decisions"]:

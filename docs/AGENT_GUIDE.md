@@ -22,7 +22,9 @@ You (the coding agent) are modifying or deeply debugging SLR-Engine. This is you
    has constraints that catch bad data — let them.
 
 5. **OA-only for downloads.** Resolve and download only **gold**, **green**, or
-   **bronze** tiers (`SLR-Engine/oa_resolver.py`). **Hybrid** and **closed** are skipped.
+   **bronze** tiers (`slr_engine/oa_resolver.py`). **Hybrid** and **closed** are skipped.
+   Multiple lawful OA URLs are collected and tried in order; there is no Sci-Hub
+   fallback. Unretrievable includes land in `not_downloaded.csv` / `.txt`.
    Sci-Hub is out of scope.
 
 ## Per-stage instructions
@@ -375,10 +377,19 @@ batch or review file.
 
 ### Stage: full-text resolution and download
 
-`scripts/05_resolve_oa.py` populates OA URLs. `scripts/06_download.py`
-fetches them. Failures are logged to the **`events` table** in `project.db`
-(stage `download`) and printed to stdout — there is no separate
-`download.log` file. After the run, report failures to the user.
+`scripts/05_resolve_oa.py` collects ranked OA URL **candidates** and stores the
+best as `resolved` plus alternates as `queued` (PMC → Europe PMC → OpenAlex
+locations → Unpaywall published/AAM → arXiv → CORE → Crossref). Set
+`contact_email` for Unpaywall; set `sources.core: true` + `CORE_API_KEY` for CORE.
+
+`scripts/06_download.py` walks `resolved` then `queued` per record until one
+fetch succeeds; leftovers become `skipped_superseded`. Use `--retry-failed` on
+05 or 06 to re-attempt records that never got a successful file.
+
+Failures are logged to the **`events` table** in `project.db` (stage
+`download`) and printed to stdout. After the run, both 06 and 07 refresh
+`screening/not_downloaded.csv` + `not_downloaded.txt` (DOI, last error,
+suggested ILL / author_request / check_preprint). Report failures to the user.
 
 ### Stage: full-text screening (recommended for any rigorous review)
 
@@ -450,8 +461,10 @@ text wins.* Be willing to flip an include to an exclude here if the
 methods section reveals the paper isn't what its abstract claimed.
 
 Records that were title-included but had no successful download go to
-`screening/not_downloaded.txt` (written by `07_fulltext_prep.py`) for manual
-follow-up. Bring them back through `07_fulltext_prep` once obtained.
+`screening/not_downloaded.csv` and `screening/not_downloaded.txt` (written by
+`06_download.py` and refreshed by `07_fulltext_prep.py`) for ILL / author
+request / preprint follow-up. Bring them back through `07_fulltext_prep` once
+obtained.
 
 Stage **07** hard-imports `markitdown`. Install it (see `requirements.txt`
 comments) before running full-text prep; PDF/HTML normalization fails without it.
