@@ -23,9 +23,8 @@ You (the coding agent) are modifying or deeply debugging SLR-Engine. This is you
 
 5. **OA-only for downloads.** Resolve and download only **gold**, **green**, or
    **bronze** tiers (`slr_engine/oa_resolver.py`). **Hybrid** and **closed** are skipped.
-   Multiple lawful OA URLs are collected and tried in order; there is no Sci-Hub
-   fallback. Unretrievable includes land in `not_downloaded.csv` / `.txt`.
-   Sci-Hub is out of scope.
+   Multiple lawful OA URLs are collected and tried in order. Unretrievable includes
+   land in `not_downloaded.csv` / `.txt`.
 
 ## Per-stage instructions
 
