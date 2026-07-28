@@ -23,9 +23,9 @@ Operating notes:
 - Snowball iterates as: run snowball, dedup, screen new candidates, then rerun snowball until closure. The script processes seeds first, then other T/A include-or-unsure records. If Semantic Scholar is enabled, citation-context ranking surfaces higher-yield candidates first.
 - Manual Google Scholar import is via `projects/<id>/imports/scholar_*.ris`; the engine does not scrape Scholar.
 
-The engine is in this repository. Its commands are numbered scripts in `scripts/`. Project state lives on disk in `projects/<id>/`. Your job is to (a) figure out which mode you're in, (b) walk the user through the right stage conversationally, (c) run the right scripts at the right time, and (d) explain things only when asked.
+The **operator skill** in this repository drives the conversation and runs **pipeline stages** in `scripts/`. Each **review project** is saved under `projects/<id>/`. Your job is to (a) figure out which mode you're in, (b) walk the user through the right stage conversationally, (c) run the right pipeline stages at the right time, and (d) explain things only when asked.
 
-If the user asks what this tool is or which documentation to read, point them to **`README.md` only**. Do not send them to other docs unless they ask a specific methodology question (then `docs/SCOPING_GUIDE.md` is fine).
+If the user asks what this tool is or which documentation to read, point them to **`README.md` only**. For methodology questions (PICOC, frameworks), answer briefly in chat.
 
 Many users have **no paid database access**. Offer **citation-first** discovery (seeds → snowball → screen → repeat) when they only have a few anchor papers and no Boolean-query comfort. Keyword search plus manual imports is the other path.
 
@@ -414,7 +414,7 @@ Two paths — **let the user choose, don't decide for them**:
 >
 > Default I'd suggest: manual first batch (5 records) to calibrate, then LLM for the rest with you spot-checking. Or LLM all the way if you want speed. Your call."
 
-Read `docs/SKILL_screening.md` before screening any batch. Apply criteria literally.
+Read `skills/slr-engine/SKILL_screening.md` before screening any batch. Apply criteria literally.
 
 ---
 
@@ -437,7 +437,7 @@ python scripts/07d_human_review.py --review <path> --print-summary
 python scripts/07d_human_review.py --review <path> --commit
 ```
 
-Read `docs/SKILL_quality_assessment.md` before deciding whether to use
+Read `skills/slr-engine/SKILL_quality_assessment.md` before deciding whether to use
 `--with-quality`. Despite the legacy flag name, this now means
 risk-of-bias / critical-appraisal fields for PRISMA reporting.
 
@@ -498,9 +498,9 @@ If prerequisites met → run, report briefly.
 
 ## STEP 11 — When the user goes off-script
 
-The user might ask things mid-scoping like *"what's PICOC?"* or *"why does this matter?"* Answer briefly (2–3 sentences max), point to `docs/SCOPING_GUIDE.md` for depth, then return to where you were:
+The user might ask things mid-scoping like *"what's PICOC?"* or *"why does this matter?"* Answer briefly (2–3 sentences max), then return to where you were:
 
-> "PICOC = Population, Intervention, Comparison, Outcome, Context — standard framework for SE/CS/AI-ML reviews (Petticrew & Roberts 2008). Structures your RQ into searchable concept groups. More in `docs/SCOPING_GUIDE.md` if you want.
+> "PICOC = Population, Intervention, Comparison, Outcome, Context — standard framework for SE/CS/AI-ML reviews (Petticrew & Roberts 2008). Structures your RQ into searchable concept groups.
 >
 > Back to where we were — does the framework slot proposal above work for you?"
 
@@ -515,10 +515,8 @@ If the user asks to skip the scoping entirely ("just init the project, I'll fill
 Read these only when you need depth, not preemptively:
 
 - `README.md` — what to tell humans if they ask what this tool is or how to start
-- `docs/SCOPING_GUIDE.md` — PICOC, frameworks, hypothesis vs RQ; when the user asks methodology questions
-- `docs/SKILL_screening.md` — read before screening any batch
-- `docs/SKILL_quality_assessment.md` — before suggesting `--with-quality` for risk-of-bias
-- `docs/AGENT_GUIDE.md` — engine code only; never for running a review
+- `skills/slr-engine/SKILL_screening.md` — read before screening any batch
+- `skills/slr-engine/SKILL_quality_assessment.md` — before suggesting `--with-quality` for risk-of-bias
 
 **This skill is the operational source of truth for running a review.**
 

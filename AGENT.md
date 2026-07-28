@@ -1,37 +1,49 @@
 # AGENT.md
 
-For the **AGENT** operating this repo — read when the workspace opens.
-**Figure out what the user wants, then follow the right path below.**
+Read when this workspace opens. You are the **review operator** for SLR-Engine.
+
+The **operator skill** tells you what to do. **Pipeline stages** in `scripts/` do the work. The **core library** in `slr_engine/` is the implementation behind those stages. Each **review project** lives under `projects/<id>/`.
 
 ---
 
-## 1. User wants to RUN a literature review
+## What to do
 
-**Read and follow [`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md).**
-That skill overrides everything else in this file for scoping, conversation
-style, and stage order.
+**Follow [`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md).** It overrides this file for scoping, conversation style, stage order, and when to run each pipeline stage.
 
-You are the **operator**, not a tour guide. Run scripts; don't explain the
-architecture unless asked.
+You are the operator, not a tour guide. Run pipeline stages; do not explain the architecture unless asked.
 
-**Conversational rules (skill enforces these):**
+If the user asks how SLR-Engine works or why outputs use PRISMA, point them to the human articles below instead of improvising.
 
-- One or two questions at a time — never a scoping form.
-- Surface the honesty disclaimer once at start; wait for yes/no.
-- Seeds before PICOC / queries — vocabulary comes from real papers (`00b`, `00c`).
-- Show literal query strings + API URLs before `02_search_open.py`; get explicit OK.
+### Operator skill install
+
+Copy [`skills/slr-engine/`](skills/slr-engine/) into your coding agent's skills directory (wherever that product expects skill files), open this repo at the root, and start a fresh session. Say: *"Help me start a literature review on [topic]."*
+
+Without the skill loaded, most agents explain the workflow instead of running it.
+
+### Supplemental docs
+
+| When | Read |
+|------|------|
+| Title/abstract screening | [`skills/slr-engine/SKILL_screening.md`](skills/slr-engine/SKILL_screening.md) |
+| Risk of bias / `--with-quality` | [`skills/slr-engine/SKILL_quality_assessment.md`](skills/slr-engine/SKILL_quality_assessment.md) |
+| Pipeline overview (humans) | [`README.md`](README.md) |
+| *How does this work?* / conversation flow (humans) | [`docs/articles/introduction-to-slr-engine.md`](docs/articles/introduction-to-slr-engine.md) |
+| Stage-by-stage detail (humans) | [`docs/articles/review-process-walkthrough.md`](docs/articles/review-process-walkthrough.md) |
+| *Why PRISMA?* / methodology (humans) | [`docs/articles/methodological-foundations.md`](docs/articles/methodological-foundations.md) |
+
+### Hard rules (skill enforces most of these)
+
+- One or two scoping questions at a time — never a form.
+- Honesty disclaimer once at start; wait for yes/no.
+- Seeds before PICOC / queries — vocabulary from real papers (`00b`, `00c`).
+- Show literal query strings and API URLs before stage **02**; get explicit approval.
 - Screening batches: max **5** records (`04_screen_prep.py --batch-size 5`).
+- OA-only downloads — no Sci-Hub; paywalled → `screening/not_downloaded.csv` / `.txt`.
+- Do not bypass `04_screen_prep.py` — batch JSONL is the audit trail.
+- `decided_by` provenance: `agent`, `llm:<provider>`, `human`, `seed`.
+- Silent-zero from a source ≠ real null — fix or acknowledge before dedup.
 
-**Read when needed:**
-
-| Moment | Doc |
-|--------|-----|
-| Labeling title/abstract batches | [`docs/SKILL_screening.md`](docs/SKILL_screening.md) |
-| Suggesting `--with-quality` / RoB | [`docs/SKILL_quality_assessment.md`](docs/SKILL_quality_assessment.md) |
-| User asks "what is PICOC?" | [`docs/SCOPING_GUIDE.md`](docs/SCOPING_GUIDE.md) |
-| Full pipeline table | [`README.md`](README.md) |
-
-**Operator checklist** (details in skill + README):
+### Stage order (keyword-search path)
 
 ```
 00 init → 00b seeds → 00c vocabulary → scoping in project.yaml
@@ -41,60 +53,35 @@ architecture unless asked.
 → 09 export
 ```
 
-**Resume:** inspect `projects/<id>/` (`project.yaml`, `project.db`, `screening/`,
-`exports/`), say what's done, propose the next script.
-
----
-
-## 2. User wants to CHANGE the engine (code, scripts, schema)
-
-Read [`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md). Do not use it to run reviews.
-
-- Topic config lives in `project.yaml` — never hardcode topics in Python.
-- New pipeline stages → numbered script in `scripts/` + document it.
-- State changes go through `slr_engine.store` helpers, not ad-hoc SQL.
-
----
-
-## 3. User is human and wants to understand the product
-
-Point them to [`README.md`](README.md). They do not need this file or the skill.
+**Resume:** inspect `projects/<id>/` (`project.yaml`, `project.db`, `screening/`, `exports/`), say what is done, propose the next pipeline stage.
 
 ---
 
 ## Repo layout
 
-| Path | Purpose |
-|------|---------|
-| `slr_engine/` | Engine library — edit only when fixing/extending the engine |
-| `scripts/` | Numbered CLI stages (`00`–`09`) you invoke |
-| `projects/<id>/` | One review: `project.yaml`, `project.db`, `queries/`, `screening/`, `exports/`, `seeds/` |
-| `skills/slr-engine/SKILL.md` | How to run a review (operator manual) |
-| `projects/_example/project.yaml` | Example config shape (IT topic demo) |
+| Path | Role |
+|------|------|
+| `skills/slr-engine/` | **Operator skill** + screening / RoB supplements |
+| `scripts/` | **Pipeline stages** (`00`–`09`) — what you run |
+| `slr_engine/` | **Core library** — imported by pipeline stages |
+| `projects/<id>/` | **Review project** — data for one review |
+| `docs/articles/` | Human articles — introduction, walkthrough, methodology, why-i-built |
+| `tests/` | Automated tests for the core library (not pipeline stages) |
 
 ---
 
-## Hard rules (always)
+## If the user is human
 
-- **OA-only downloads** — no Sci-Hub; paywalled → `not_downloaded.csv` / `.txt`.
-  Resolve collects multiple OA candidates (PMC, Europe PMC, OpenAlex, Unpaywall,
-  arXiv, CORE, Crossref); download walks them until one succeeds.
-- **Don't bypass `04_screen_prep.py`** — batch JSONL is the audit trail.
-- **`decided_by` provenance:** `agent` (hand labels), `llm:<provider>` (`04c`),
-  `human` (overrides), `seed` (auto-include on first commit).
-- **Agent mode** (`llm: null` or `provider: agent`): stage handoff files; no API key required.
-- **Don't relax inclusion/exclusion criteria** without asking the user.
-- **Silent-zero ≠ real null** — if a source returned 0 with HTTP errors, fix or acknowledge before dedup.
+Point them to [`README.md`](README.md) and [`docs/articles/`](docs/articles/). They do not need this file.
 
 ---
 
 ## Anti-patterns
 
-- Dumping a form with all scoping fields at once.
-- Explaining the engine instead of running the next stage.
+- Dumping a scoping form with all fields at once.
+- Explaining SLR-Engine instead of running the next pipeline stage.
 - PICOC slots before seeds and `_vocabulary.json` exist.
 - Inventing search vocabulary not in the curated seed vocabulary.
 - Running search without showing literal queries and URLs.
 - Marking include from title only — read the abstract.
-- Writing one-off scripts instead of using/extending numbered stages.
 - Skipping human review on LLM full-text (`07d`) — LLM output is recommendations only.

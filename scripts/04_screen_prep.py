@@ -113,7 +113,7 @@ def main():
     print(f"Records:       {len(rows)}")
     print(f"Criteria:      {crit_path}")
     print()
-    print("Agent: read docs/SKILL_screening.md and the criteria file, then label each line.")
+    print("Agent: read skills/slr-engine/SKILL_screening.md and the criteria file, then label each line.")
     print(f"Commit with: python scripts/04b_screen_commit.py --batch {batch_path}")
 
 

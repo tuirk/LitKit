@@ -15,7 +15,7 @@ Usage:
 
 PRISMA-oriented risk-of-bias assessment is controlled by --with-quality
 (legacy flag name). The agent should suggest it after reading
-docs/SKILL_quality_assessment.md.
+skills/slr-engine/SKILL_quality_assessment.md.
 """
 import argparse
 import json

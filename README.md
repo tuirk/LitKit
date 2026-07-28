@@ -5,87 +5,62 @@ human-in-the-loop where needed.
 
 A systematic literature review (SLR) is a structured method to find, screen, and
 summarize published research on a specific question using explicit search
-strategies and documented inclusion criteria—not ad-hoc searching. See
-[SLR-Engine vs agent deep / web search](#slr-engine-vs-agent-deep--web-search) below.
+strategies and documented inclusion criteria—not ad-hoc searching. Not sure how
+that differs from asking an agent to search the web? See
+[SLR-Engine vs agent deep / web search](#slr-engine-vs-agent-deep--web-search).
 
-The engine is a mix of deterministic scripts and prompts wrapped with an agent
-skill so your coding agent runs and walks you through the workflow. Your agent
-takes a research question, clarifies goals, extracts keywords, writes queries,
-searches academic databases, deduplicates sources, does an initial evaluation and
-records inclusion/exclusion decisions, builds an evidence set, downloads relevant
-papers (when available) for further multi-pass screening, and exports a review
-corpus. At the end you're left with a curated set of papers ready for synthesis.
+SLR-Engine combines **pipeline stages** (deterministic steps) with an **operator skill** so your coding agent runs and walks you through the workflow. For a plain-language tour of the conversation and pipeline, see the [introduction article](docs/articles/introduction-to-slr-engine.md). For why the project exists and how it is designed, see [Why I built SLR-Engine](docs/articles/why-i-built-slr-engine.md).
 
-## Working with a coding agent
+## Contents
 
-SLR-Engine expects a **coding agent** (via the skill in `skills/slr-engine/`) to
-run the workflow with you.
+- [What will you get if you use SLR-Engine](#what-will-you-get-if-you-use-slr-engine)
+- [SLR-Engine vs agent deep / web search](#slr-engine-vs-agent-deep--web-search)
+- [Quick start](#quick-start)
+- [How SLR-Engine is built](#how-slr-engine-is-built)
+- [Step-by-step workflow](#step-by-step-workflow)
+- [Supported sources](#supported-sources)
+- [Optional dependencies](#optional-dependencies)
+- [License](#license)
 
-- **Scripts** do the mechanical work: search databases, dedupe, resolve downloads,
-  export files.
-- **You + the agent** do the judgment work: scope the question, set inclusion rules,
-  label screening batches (usually a few papers at a time in simple files on disk),
-  and override anything that looks wrong.
+---
 
-The Python code never calls an LLM by itself in the default setup; it prepares
-files, your agent reads them and runs the next script. Optional API-based LLM
-screening exists for power users—see **Sources** below and
-[`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md) if you need that path.
+## What will you get if you use SLR-Engine
 
-**Docs:** humans read this README. Agents running reviews follow
-[`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md). Engine changes:
-[`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md). [`AGENT.md`](AGENT.md) routes
-agents at workspace open.
-
-## Output
-
-You get a **project folder** on disk: screened papers plus **research reporting**
-you can show in a thesis, report, or methods appendix—not just a chat summary.
+You get a **project folder** on disk under `projects/<id>/`: screened papers plus **research reporting** you can show in a thesis, report, or methods appendix—not just a chat summary. Stage-by-stage file layout and time estimates are in the [review process walkthrough](docs/articles/review-process-walkthrough.md).
 
 **Evidence set**
 
-- **Downloaded open-access PDFs** (when found) — full papers in the project folder,
-  not just abstracts.
+- **Downloaded open-access PDFs** (when found) — full papers in the project folder, not just abstracts.
 - **Your shortlist** — which papers made the cut, with include/exclude reasons.
-- **Spreadsheet of every paper touched** — title, source, decisions, who decided.
-- **Import file for reference tools** — Zotero, Mendeley, etc.
-- **Optional study notes** — fields pulled from full-text reading, plus optional
-  quality / risk-of-bias ratings when you run that pass.
+- **Spreadsheet of every paper touched** — title, source, decisions, who decided (`records.csv` / `records.jsonl`).
+- **Import file for reference tools** — Zotero, Mendeley, etc. (`included.ris`).
+- **Optional study notes** — fields pulled from full-text reading, plus optional quality / risk-of-bias ratings when you run that pass (`extractions.csv`).
 
 **Reporting and traceability**
 
-- **PRISMA flow diagrams** — standard and detailed charts of how many records were
-  identified, screened, included, and excluded.
-- **Methods report** — a readable write-up of your search, screening, and decisions.
-- **Full audit log** — exact queries run, duplicates merged, and screening counts.
-- **Optional protocol draft** — a prospective plan before search, if you generate one
-  at the start.
+- **PRISMA flow diagrams** — standard and expanded charts of how many records were identified, screened, included, and excluded. Methodology background: [Methodological foundations](docs/articles/methodological-foundations.md).
+- **Methods report** — a readable write-up of your search, screening, and decisions (`methodology_report.md`).
+- **Full audit log** — exact queries run, duplicates merged, and screening counts (`audit.json`).
+- **Optional protocol draft** — a prospective plan before search, if you generate one at scoping (`protocol_draft.md`).
 
-You can stop mid-review and resume; the folder keeps queries, screening work, and
-downloads until export.
+You can stop mid-review and resume; the folder keeps queries, screening work, and downloads until export. Ready for synthesis, writing, or analysis.
 
-Ready for synthesis, writing, or analysis.
+---
 
 ## SLR-Engine vs agent deep / web search
 
-**Agent deep search and web skills** answer a question in chat: search the web,
-read pages, summarize, cite a few links. Fast and conversational—good for a quick
-take.
+**Agent deep search and web skills** answer a question in chat: search the web, read pages, summarize, cite a few links. Fast and conversational—good for a quick take.
 
-**SLR-Engine** runs a structured review on disk. The output is a reproducible
-dataset of screened academic papers with decision history, not a conversational
-answer.
+**SLR-Engine** runs a structured review on disk. The output is a reproducible dataset of screened academic papers with decision history, not a conversational answer. See [What will you get](#what-will-you-get-if-you-use-slr-engine) above for the on-disk deliverables.
 
-Use deep search when you need a quick read. Use SLR-Engine when the deliverable is a
-traceable paper set you can export, revisit, and defend.
+Use deep search when you need a quick read. Use SLR-Engine when the deliverable is a traceable paper set you can export, revisit, and defend.
 
-**Good fit:** students, researchers, hobbyists, analysts, knowledge workers—anyone
-who needs real sources to ground their work on.
+**Good fit:** students, researchers, hobbyists, analysts, knowledge workers—anyone who needs real sources to ground their work on.
 
 | | Agent deep / web search | SLR-Engine |
 |---|-------------------------|--------|
 | **Output** | Summary + ad-hoc links | Shortlist + CSV/RIS + audit log |
-| **Sources** | Web, blogs, news, mixed quality | Academic APIs (OpenAlex, Crossref, arXiv, …) |
+| **Sources** | Web, blogs, news, mixed quality | Academic APIs ([supported sources](#supported-sources)) |
 | **Curation** | Model picks what looks relevant | You set include/exclude; screen in batches |
 | **Dedup** | Same paper may appear from different URLs | Cross-source dedup by DOI / title / author |
 | **Reproducibility** | Hard to replay what was searched | Saved queries, counts, and decisions in `projects/` |
@@ -95,12 +70,56 @@ who needs real sources to ground their work on.
 | **Citation accuracy** | Risk of invented or wrong links | Records from APIs and metadata, not free-form generation |
 | **Speed** | Faster for orientation | Slower — by design |
 
+---
+
+## Quick start
+
+Verify install: `python scripts/smoke_verify.py` (uses `projects/_demo/`).
+
+1. Install the **operator skill** — copy [`skills/slr-engine/`](skills/slr-engine/) into your agent's skills folder (see [`AGENT.md`](AGENT.md#operator-skill-install)).
+2. Open this repo in the agent and say: *"Help me start a literature review on [topic]."*
+3. The agent scopes, searches, screens, and exports to `projects/<id>/exports/`. Resume: *"Continue project [id]."*
+
+Install the skill if you can — without it, agents often explain the workflow instead of running it.
+
+New to the project? Read the [introduction article](docs/articles/introduction-to-slr-engine.md) first. For every stage in detail (API keys, batches, files on disk), use the [review process walkthrough](docs/articles/review-process-walkthrough.md).
+
+---
+
+## How SLR-Engine is built
+
+The **operator skill** ([`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md)) tells the agent what to do. **Pipeline stages** in `scripts/` do the work. The **core library** in `slr_engine/` is the implementation behind those stages. Each **review project** lives under `projects/<id>/`.
+
+SLR-Engine expects a **coding agent** to run the workflow with you. Coding agents should open [`AGENT.md`](AGENT.md) when this workspace loads.
+
+- **Pipeline stages** do the mechanical work: search databases, dedupe, resolve downloads, export files.
+- **You + the agent** do the judgment work: scope the question, set inclusion rules, label screening batches (usually a few papers at a time in simple files on disk), and override anything that looks wrong.
+
+In the default setup the core library never calls an LLM by itself; it prepares files, your agent reads them and runs the next pipeline stage. Optional API-based LLM screening exists for power users — see [Supported sources](#supported-sources).
+
+Layer diagram and design principles: [Why I built SLR-Engine](docs/articles/why-i-built-slr-engine.md).
+
+### Documentation
+
+Human articles live in [`docs/articles/`](docs/articles/) on GitHub: [github.com/tuirk/SLR-Engine/tree/main/docs/articles](https://github.com/tuirk/SLR-Engine/tree/main/docs/articles).
+
+| Path | Audience | What it covers |
+|------|----------|----------------|
+| [`README.md`](README.md) | Everyone | This file: overview, workflow table, quick start |
+| [`docs/articles/why-i-built-slr-engine.md`](docs/articles/why-i-built-slr-engine.md) | Humans | Motivation, design principles, architecture |
+| [`docs/articles/introduction-to-slr-engine.md`](docs/articles/introduction-to-slr-engine.md) | Humans | Plain-language introduction and conversation flow |
+| [`docs/articles/review-process-walkthrough.md`](docs/articles/review-process-walkthrough.md) | Humans | Stage-by-stage walkthrough (files, keys, time) |
+| [`docs/articles/methodological-foundations.md`](docs/articles/methodological-foundations.md) | Humans | Methodology pillars and references |
+| [`AGENT.md`](AGENT.md) | Coding agents | Entry when the workspace opens |
+| [`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md) | Coding agents | Operator skill: run and walk through a review |
+
+---
+
 ## Step-by-step workflow
 
-Scripts live in `scripts/` (`00`–`09`). The last column marks who runs each step:
-**script** (Python only), **agent** (coding agent via `skills/slr-engine/`), **user**
-(you), or a combination. Optional LLM stages (`04c`, `07c`, `08b`) add script-driven
-API calls where noted.
+Pipeline stages live in `scripts/` (`00`–`09`). The table below is a compact reference; the [review process walkthrough](docs/articles/review-process-walkthrough.md) has the full narrative (who does what, how long it takes, what lands on disk).
+
+The last column marks who runs each step: **script** (Python only), **agent** (coding agent via [`skills/slr-engine/SKILL.md`](skills/slr-engine/SKILL.md)), **user** (you), or a combination. Optional LLM stages (`04c`, `07c`, `08b`) add script-driven API calls where noted.
 
 | # | Stage | What it does | Who |
 |---|-------|--------------|-----|
@@ -128,30 +147,13 @@ API calls where noted.
 
 **Discovery paths (often combined):** *Pearl growing* — **00b** → **00c** → **04** → **08**, then loop **08 → 03 → 04**. *Keyword search* — **00b** → **00c** → **01** → **02** → **03** → **04**. Then shared path: **05** → **06** → **07** (optional **08b**) → **09**.
 
-Example config: [`projects/_example/project.yaml`](projects/_example/project.yaml).
+Example config: [`projects/_example/project.yaml`](projects/_example/project.yaml). Screening rules: [`skills/slr-engine/SKILL_screening.md`](skills/slr-engine/SKILL_screening.md).
 
 ---
 
-## Quick start
+## Supported sources
 
-Verify install: python scripts/smoke_verify.py (uses projects/_demo/).
-
-
-1. Install the skill — [`skills/slr-engine/`](skills/slr-engine/) → your agent's
-   skills folder ([`skills/README.md`](skills/README.md)).
-2. Open this repo in the agent and say: *"Help me start a literature review on
-   [topic]."*
-3. The agent scopes, searches, screens, and exports to `projects/<id>/exports/`.
-   Resume: *"Continue project [id]."*
-
-Install the skill if you can — without it, agents often explain the workflow
-instead of running it.
-
----
-
-## Sources
-
-Three intake paths — all merge into the same dedup and screening pipeline.
+Three intake paths — all merge into the same dedup and screening pipeline. API keys, toggles, and rate limits are documented in the [walkthrough](docs/articles/review-process-walkthrough.md#before-anything-starts) (*Before anything starts*).
 
 | Stage | Sources |
 |-------|---------|
@@ -160,23 +162,11 @@ Three intake paths — all merge into the same dedup and screening pipeline.
 | **02b — manual** | Scopus · Web of Science · Google Scholar → RIS/CSV in `imports/` as `scopus_*`, `wos_*`, `scholar_*` |
 | **05–06 — full text** | PMC → Europe PMC → OpenAlex → Unpaywall → CORE (if `sources.core: true` + `CORE_API_KEY`) → Crossref |
 
-**Optional keys and sources.** Nothing above requires paid accounts. Extra sources and
-`.env` keys (`OPENALEX_API_KEY`, `S2_API_KEY`, `NCBI_API_KEY`, `CORE_API_KEY`) are
-optional — add them for rate limits or extra resolvers. `CORE_API_KEY` is used only
-when `sources.core: true` in `project.yaml`. `OPENALEX_API_KEY` can also live in
-`project.yaml` as `openalex_api_key`.
-Set `contact_email` in `project.yaml`. Paywalled or hybrid tiers are not
-auto-downloaded; see `screening/not_downloaded.csv` / `not_downloaded.txt`.
-Resolve collects multiple OA candidates and download retries them in order.
+**Optional keys and sources.** Nothing above requires paid accounts. Extra sources and `.env` keys (`OPENALEX_API_KEY`, `S2_API_KEY`, `NCBI_API_KEY`, `CORE_API_KEY`) are optional — add them for rate limits or extra resolvers. `CORE_API_KEY` is used only when `sources.core: true` in `project.yaml`. `OPENALEX_API_KEY` can also live in `project.yaml` as `openalex_api_key`. Set `contact_email` in `project.yaml`. Paywalled or hybrid tiers are not auto-downloaded; see `screening/not_downloaded.csv` / `not_downloaded.txt`. Resolve collects multiple OA candidates and download retries them in order.
 
-**Default: agent drives judgment.** With no `llm:` block (or `provider: agent`), your
-coding agent handles vocabulary curation, screening, and full-text review via the
-skill. The scripts handle search, dedup, resolve, download, and export.
+**Default: agent drives judgment.** With no `llm:` block (or `provider: agent`), your coding agent handles vocabulary curation, screening, and full-text review via the [operator skill](skills/slr-engine/SKILL.md). The scripts handle search, dedup, resolve, download, and export.
 
-**Optional: scripts call APIs directly.** Set `llm.provider` in `project.yaml` plus
-provider keys in `.env` to run unattended LLM stages (04c, 07c, 08b). That path and
-`agent_handoff_runner.py` are **stub/reference implementations** — workable, but the
-intended workflow is agent + skill, not headless automation.
+**Optional: scripts call APIs directly.** Set `llm.provider` in `project.yaml` plus provider keys in `.env` to run unattended LLM stages (04c, 07c, 08b). That path and `agent_handoff_runner.py` are **stub/reference implementations** — workable, but the intended workflow is agent + skill, not headless automation.
 
 ---
 
@@ -190,36 +180,10 @@ Core: stdlib + PyYAML (`pip install -r requirements.txt`). Everything below is o
 | `markitdown`, PDF libs | PDF/HTML → markdown at **07** | Stage **07** fails on PDF conversion until installed (`requirements.txt` comments) |
 | `llm:` + provider keys in `.env` | Unattended LLM at **04c** / **07c** / **08b** | Agent labels batches via skill (default) |
 
-Direct LLM calls and `agent_handoff_runner.py` are stub/reference paths — see Sources above.
+Direct LLM calls and `agent_handoff_runner.py` are stub/reference paths — see [Supported sources](#supported-sources).
 
 ---
 
-## Project layout
-
-```
-SLR-Engine/                    repo root
-├── slr_engine/                    Python library (sources, store, dedup, resolver, …)
-├── scripts/                    Numbered stages the agent runs
-├── projects/
-│   ├── _example/               Template project.yaml
-│   └── <id>/                   One folder per review
-│       ├── project.yaml        Scope, criteria, source toggles
-│       ├── project.db          SQLite record + screening state
-│       ├── seeds/              Seed papers, vocabulary, KeyBERT bucket
-│       ├── queries/            Search strings (fill before stage 02)
-│       ├── imports/            Manual Scopus / WoS / Scholar exports (02b)
-│       ├── screening/          Batches, criteria, handoff files
-│       ├── data/fulltext/      Downloaded OA PDFs / HTML
-│       ├── data/fulltext_md/   Normalized markdown (stage 07)
-│       ├── logs/               search.log, events in project.db, …
-│       └── exports/            CSV, RIS, audit.json, PRISMA SVGs
-├── skills/slr-engine/          Operating skill for coding agents
-├── docs/                       Scoping, screening, RoB, dev guide
-├── AGENT.md                    Agent entry when the workspace opens
-├── requirements.txt
-└── .env.example                Optional API keys (copy to `.env`)
-```
-
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). [Code of conduct](CODE_OF_CONDUCT.md).
